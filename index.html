@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Mandarin Puzzle Edukasi</title>
+
+<style>
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{margin:0;background:#f7f1e8;color:#1f2937}
+nav{display:none;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:linear-gradient(90deg,#991b1b,#dc2626);color:white;padding:14px 18px;position:sticky;top:0;z-index:10}
+nav button{width:auto;background:white;color:#991b1b;padding:9px 12px;border-radius:10px;margin:3px;border:none;font-weight:bold;cursor:pointer}
+.brand{font-size:20px;font-weight:bold}
+.page{display:none;padding:22px}
+.page.active{display:block}
+.auth-page{min-height:100vh;display:none;align-items:center;justify-content:center;background:linear-gradient(135deg,#fff7ed,#fee2e2)}
+.auth-page.active{display:flex}
+.container{max-width:1200px;margin:auto;text-align:center}
+.card,.panel,.vocab-card,.side-panel,.profile-card{background:white;border-radius:22px;padding:22px;margin:18px auto;box-shadow:0 10px 25px rgba(0,0,0,.12)}
+.card{max-width:420px}
+input,button,select{width:100%;padding:12px;margin:8px 0;border-radius:12px;border:1px solid #ddd;font-size:16px}
+button{background:#d97706;color:white;border:none;font-weight:bold;cursor:pointer}
+button:hover{background:#b45309}
+button.green{background:#15803d}
+button.blue{background:#2563eb}
+button.gray{background:#9ca3af;cursor:not-allowed}
+a{color:#b91c1c;font-weight:bold;cursor:pointer;text-decoration:none}
+h1{color:#991b1b}
+h2,h3{color:#b91c1c}
+.error{display:none;background:#fee2e2;color:#991b1b;padding:10px;border-radius:10px}
+.success{display:none;background:#dcfce7;color:#166534;padding:10px;border-radius:10px}
+.menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:25px}
+.menu-card{background:white;border-radius:22px;padding:30px 12px;font-size:19px;font-weight:bold;cursor:pointer;box-shadow:0 10px 25px rgba(0,0,0,.12)}
+.menu-card:hover{background:#fff7ed;transform:translateY(-5px)}
+.vocab-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.vocab-card{text-align:left}
+.vocab-head{text-align:center}
+.vocab-img,.preview-img{width:190px;height:190px;object-fit:contain;display:block;margin:0 auto 10px;border-radius:20px;background:#fff7ed;box-shadow:0 8px 18px rgba(0,0,0,.15)}
+.preview-img{width:260px;height:260px}
+.hanzi{font-size:42px;color:#991b1b;font-weight:bold;text-align:center;word-break:break-word}
+.level-tag{display:inline-block;background:#fef3c7;color:#92400e;border-radius:999px;padding:6px 12px;font-weight:bold}
+.meta{background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:12px;margin:12px 0;text-align:left}
+.meta p{margin:6px 0}
+.audio-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.audio-bar button{font-size:14px;margin:0}
+.level-selector{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+.level-selector button{font-size:14px;min-height:58px}
+.game-layout{display:grid;grid-template-columns:1fr 460px 1fr;gap:18px;margin-top:20px}
+.puzzle-status,.stat-box{background:white;border-radius:14px;padding:12px;box-shadow:0 6px 15px rgba(0,0,0,.12);font-weight:bold}
+.puzzle-stats{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0}
+.board-wrap{perspective:1200px}
+#puzzleBoard{width:min(92vw,440px);aspect-ratio:1/1;margin:18px auto;display:grid;border:8px solid #991b1b;background:#7f1d1d;border-radius:24px;overflow:hidden;transform:rotateX(8deg);box-shadow:0 16px 35px rgba(0,0,0,.3)}
+.piece{border:2px solid white;background-repeat:no-repeat;cursor:pointer;transition:.18s;box-shadow:inset 0 -5px 10px rgba(0,0,0,.18)}
+.piece:hover{transform:translateY(-4px) scale(1.03);filter:brightness(1.08);z-index:3}
+.piece.selected{outline:6px solid #facc15;outline-offset:-6px;transform:translateY(-6px) scale(1.05);z-index:5}
+#successBox{background:white;max-width:820px;margin:24px auto;padding:24px;border-radius:24px;box-shadow:0 10px 25px rgba(0,0,0,.12)}
+#successBox img{max-width:100%;border-radius:20px}
+.hidden{display:none}
+.point{font-size:26px;color:#d97706;font-weight:bold}
+.profile-card{max-width:720px;text-align:left}
+.profile-card h2{text-align:center}
+.badge{display:inline-block;padding:8px 12px;background:#fef3c7;color:#92400e;border-radius:999px;font-weight:bold}
+.progress-wrap{height:18px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:8px}
+.progress-bar{height:100%;background:linear-gradient(90deg,#f59e0b,#dc2626);width:0%}
+.small{font-size:14px;color:#6b7280}
+.confetti{position:fixed;top:-20px;width:12px;height:12px;z-index:999;animation:fall 3s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+@media(max-width:900px){
+  .game-layout,.menu-grid,.level-selector{grid-template-columns:1fr}
+  .vocab-grid{grid-template-columns:1fr}
+  .audio-bar{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<nav id="navbar">
+  <div class="brand">Mandarin Puzzle Edukasi</div>
+  <div>
+    <button onclick="showPage('home')">Home</button>
+    <button onclick="showPage('belajar')">Kosakata</button>
+    <button onclick="showPage('puzzle')">Puzzle</button>
+    <button onclick="showPage('progress')">Progress</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<section id="page-login" class="page auth-page">
+  <div class="card">
+    <h1>Login</h1>
+    <p>Mandarin Puzzle Edukasi</p>
+    <div id="loginError" class="error"></div>
+    <form id="loginForm">
+      <input id="loginUsername" placeholder="Username" required>
+      <input id="loginPassword" type="password" placeholder="Password" required>
+      <button>Login</button>
+    </form>
+    <p>Belum punya akun? <a onclick="showPage('register')">Register</a></p>
+  </div>
+</section>
+
+<section id="page-register" class="page auth-page">
+  <div class="card">
+    <h1>Register</h1>
+    <p>Progress belajar akan tersimpan otomatis agar latihan dapat dilanjutkan.</p>
+    <div id="registerError" class="error"></div>
+    <div id="registerSuccess" class="success"></div>
+    <form id="registerForm">
+      <input id="registerUsername" placeholder="Buat username" required>
+      <input id="registerPassword" type="password" placeholder="Buat password" required>
+      <button>Daftar</button>
+    </form>
+    <p>Sudah punya akun? <a onclick="showPage('login')">Login</a></p>
+  </div>
+</section>
+
+<section id="page-home" class="page">
+  <div class="container">
+    <h1>你好，欢迎学习中文</h1>
+    <p id="homeUsername"></p>
+    <div class="menu-grid">
+      <div class="menu-card" onclick="showPage('belajar')">📚 Kosakata</div>
+      <div class="menu-card" onclick="showPage('puzzle')">🧩 Puzzle Bertahap</div>
+      <div class="menu-card" onclick="showPage('progress')">📈 Progress Belajar</div>
+    </div>
+  </div>
+</section>
+
+<section id="page-belajar" class="page">
+  <div class="container">
+    <h1>Kosakata Bahasa Mandarin</h1>
+    <p>4 level pembelajaran, masing-masing berisi 200 puzzle kosakata.</p>
+    <div class="panel">
+      <select id="filterLevel" onchange="renderVocab()">
+        <option value="all">Semua Level</option>
+        <option value="pemula">Pemula</option>
+        <option value="dasar">Dasar</option>
+        <option value="menengah">Menengah</option>
+        <option value="lanjutan">Lanjutan</option>
+      </select>
+      <input id="searchVocab" oninput="renderVocab()" placeholder="Cari Hanzi / Pinyin / Arti">
+      <p id="vocabCount" class="small"></p>
+    </div>
+    <div id="vocabGrid" class="vocab-grid"></div>
+  </div>
+</section>
+
+<section id="page-puzzle" class="page">
+  <div class="container">
+    <h1>Puzzle Bertahap</h1>
+
+    <div class="panel">
+      <h3>Pilih Level</h3>
+      <p class="small">Level berikutnya terbuka setelah 200 puzzle level sebelumnya selesai.</p>
+      <div id="levelSelector" class="level-selector"></div>
+    </div>
+
+    <div class="game-layout">
+      <div class="side-panel">
+        <h3>Gambar Utuh</h3>
+        <div id="selectedPuzzlePreview">Pilih level untuk mulai.</div>
+      </div>
+
+      <div>
+        <div id="autoStatus" class="puzzle-status">Pilih level yang tersedia.</div>
+        <div class="puzzle-stats">
+          <div class="stat-box">Level: <span id="currentLevelText">-</span></div>
+          <div class="stat-box">Progress: <span id="levelProgressText">-</span></div>
+          <div class="stat-box">Ukuran: <span id="gridText">-</span></div>
+          <div class="stat-box">Langkah: <span id="moveCount">0</span></div>
+          <div class="stat-box">Waktu: <span id="timerText">00:00</span></div>
+        </div>
+
+        <div class="board-wrap">
+          <div id="puzzleBoard"></div>
+        </div>
+
+        <p class="small">Klik/tap dua potongan gambar untuk menukar posisi.</p>
+      </div>
+
+      <div class="side-panel">
+        <h3>Materi</h3>
+        <div id="selectedPuzzleInfo">Materi otomatis sesuai level.</div>
+      </div>
+    </div>
+
+    <div id="successBox" class="hidden">
+      <h1>🎉 Selamat!</h1>
+      <div id="successContent"></div>
+    </div>
+  </div>
+</section>
+
+<section id="page-progress" class="page">
+  <div class="container">
+    <h1>Progress Belajar</h1>
+    <div class="profile-card">
+      <h2 id="profileUsername"></h2>
+      <p><b>Level aktif:</b> <span id="profileLevel"></span></p>
+      <p><b>Level terbuka:</b> <span id="profileUnlocked"></span></p>
+      <p><b>Level selesai:</b> <span id="profileCompleted"></span></p>
+      <p><b>Poin:</b> <span id="profilePoints"></span></p>
+      <p><b>Total puzzle selesai:</b> <span id="profileTotalPuzzle"></span></p>
+      <p><b>Badge:</b> <span id="profileBadge" class="badge"></span></p>
+
+      <hr>
+
+      <h3>Progress Per Level</h3>
+      <div id="profileLevelProgress"></div>
+    </div>
+  </div>
+</section>
+
+<script>
+const ONLINE_DATA_URL = "";
+
+const STORAGE_USERS = "mandarin_puzzle_4level_final_users_v3";
+const STORAGE_CURRENT = "mandarin_puzzle_4level_final_current_v3";
+
+let users = JSON.parse(localStorage.getItem(STORAGE_USERS)) || [];
+let vocabData = [];
+let currentPuzzle = null;
+let currentLevel = "pemula";
+let currentAttemptId = null;
+let pieces = [];
+let selectedIndex = null;
+let dragIndex = null;
+let puzzleFinished = false;
+let pointAlreadyGiven = false;
+let moveCount = 0;
+let timerInterval = null;
+let seconds = 0;
+let currentGridSize = 3;
+let autoNextTimer = null;
+let availableVoices = [];
+
+const navbar = document.getElementById("navbar");
+const puzzleBoard = document.getElementById("puzzleBoard");
+const successBox = document.getElementById("successBox");
+const successContent = document.getElementById("successContent");
+
+const levelOrder = ["pemula","dasar","menengah","lanjutan"];
+
+const levelConfig = {
+  pemula:{nama:"Pemula",targetPuzzle:200,ukuranPuzzle:3,next:"dasar"},
+  dasar:{nama:"Dasar",targetPuzzle:200,ukuranPuzzle:3,next:"menengah"},
+  menengah:{nama:"Menengah",targetPuzzle:200,ukuranPuzzle:4,next:"lanjutan"},
+  lanjutan:{nama:"Lanjutan",targetPuzzle:200,ukuranPuzzle:5,next:null}
+};
+
+const colors = [
+  ["#fee2e2","#fecaca"],["#dbeafe","#93c5fd"],["#dcfce7","#86efac"],
+  ["#fef3c7","#fde68a"],["#ede9fe","#a78bfa"],["#ffedd5","#fb923c"],
+  ["#e0f2fe","#38bdf8"],["#fae8ff","#f0abfc"],["#f9fafb","#cbd5e1"]
+];
+
+function item(l,h,p,m,e,t,s,sp,sm){
+  return {l,h,p,m,e,t,s,sp,sm};
+}
+
+function buildVocabulary(){
+  const data=[];
+
+  const pemula=[
+    item("pemula","你好","nǐ hǎo","halo","👋","phrase","你好！很高兴认识你。","Nǐ hǎo! Hěn gāoxìng rènshi nǐ.","Halo! Senang berkenalan denganmu."),
+    item("pemula","谢谢","xièxie","terima kasih","🙏","phrase","谢谢你的帮助。","Xièxie nǐ de bāngzhù.","Terima kasih atas bantuanmu."),
+    item("pemula","再见","zài jiàn","sampai jumpa","👋","phrase","老师，再见！","Lǎoshī, zài jiàn!","Guru, sampai jumpa!"),
+    item("pemula","对不起","duìbuqǐ","maaf","🙏","phrase","对不起，我来晚了。","Duìbuqǐ, wǒ lái wǎn le.","Maaf, saya datang terlambat."),
+    item("pemula","没关系","méi guānxi","tidak apa-apa","🙂","phrase","没关系，请坐。","Méi guānxi, qǐng zuò.","Tidak apa-apa, silakan duduk."),
+    item("pemula","我","wǒ","saya","🧑","person","我是学生。","Wǒ shì xuéshēng.","Saya adalah siswa."),
+    item("pemula","你","nǐ","kamu","👤","person","你今天忙吗？","Nǐ jīntiān máng ma?","Apakah kamu sibuk hari ini?"),
+    item("pemula","他","tā","dia laki-laki","👦","person","他是我的朋友。","Tā shì wǒ de péngyǒu.","Dia adalah teman saya."),
+    item("pemula","她","tā","dia perempuan","👧","person","她在学校学习。","Tā zài xuéxiào xuéxí.","Dia belajar di sekolah."),
+    item("pemula","我们","wǒmen","kami / kita","👥","person","我们一起学习中文。","Wǒmen yìqǐ xuéxí Zhōngwén.","Kami belajar bahasa Mandarin bersama."),
+    item("pemula","爸爸","bàba","ayah","👨","person","爸爸喜欢喝茶。","Bàba xǐhuān hē chá.","Ayah suka minum teh."),
+    item("pemula","妈妈","māma","ibu","👩","person","妈妈去市场买菜。","Māma qù shìchǎng mǎi cài.","Ibu pergi ke pasar membeli sayur."),
+    item("pemula","老师","lǎoshī","guru","👩‍🏫","person","老师教我们中文。","Lǎoshī jiāo wǒmen Zhōngwén.","Guru mengajar kami bahasa Mandarin."),
+    item("pemula","学生","xuéshēng","siswa","🎓","person","学生在教室里学习。","Xuéshēng zài jiàoshì lǐ xuéxí.","Siswa belajar di ruang kelas."),
+    item("pemula","朋友","péngyǒu","teman","🤝","person","我和朋友一起看书。","Wǒ hé péngyǒu yìqǐ kàn shū.","Saya membaca buku bersama teman."),
+    item("pemula","家","jiā","rumah / keluarga","🏠","place","我家离学校不远。","Wǒ jiā lí xuéxiào bù yuǎn.","Rumah saya tidak jauh dari sekolah."),
+    item("pemula","学校","xuéxiào","sekolah","🏫","place","我每天去学校。","Wǒ měitiān qù xuéxiào.","Saya pergi ke sekolah setiap hari."),
+    item("pemula","教室","jiàoshì","ruang kelas","🏫","place","学生在教室里学习。","Xuéshēng zài jiàoshì lǐ xuéxí.","Siswa belajar di ruang kelas."),
+    item("pemula","水","shuǐ","air","💧","noun","我想喝水。","Wǒ xiǎng hē shuǐ.","Saya ingin minum air."),
+    item("pemula","茶","chá","teh","🍵","noun","这杯茶很香。","Zhè bēi chá hěn xiāng.","Secangkir teh ini harum."),
+    item("pemula","米饭","mǐfàn","nasi","🍚","noun","我中午吃米饭。","Wǒ zhōngwǔ chī mǐfàn.","Saya makan nasi pada siang hari."),
+    item("pemula","面条","miàntiáo","mi","🍜","noun","他喜欢吃面条。","Tā xǐhuān chī miàntiáo.","Dia suka makan mi."),
+    item("pemula","苹果","píngguǒ","apel","🍎","noun","这个苹果很甜。","Zhège píngguǒ hěn tián.","Apel ini sangat manis."),
+    item("pemula","香蕉","xiāngjiāo","pisang","🍌","noun","桌子上有香蕉。","Zhuōzi shàng yǒu xiāngjiāo.","Di atas meja ada pisang."),
+    item("pemula","书","shū","buku","📘","noun","这本书很有意思。","Zhè běn shū hěn yǒu yìsi.","Buku ini sangat menarik."),
+    item("pemula","笔","bǐ","pulpen","✏️","noun","我用笔写汉字。","Wǒ yòng bǐ xiě Hànzì.","Saya menggunakan pulpen untuk menulis Hanzi."),
+    item("pemula","桌子","zhuōzi","meja","🪑","noun","书在桌子上。","Shū zài zhuōzi shàng.","Buku ada di atas meja."),
+    item("pemula","椅子","yǐzi","kursi","🪑","noun","请坐在椅子上。","Qǐng zuò zài yǐzi shàng.","Silakan duduk di kursi."),
+    item("pemula","门","mén","pintu","🚪","noun","请把门打开。","Qǐng bǎ mén dǎkāi.","Tolong buka pintunya."),
+    item("pemula","车","chē","kendaraan","🚗","noun","他坐车去学校。","Tā zuò chē qù xuéxiào.","Dia naik kendaraan ke sekolah."),
+    item("pemula","猫","māo","kucing","🐱","noun","小猫在椅子旁边。","Xiǎo māo zài yǐzi pángbiān.","Kucing kecil ada di samping kursi."),
+    item("pemula","狗","gǒu","anjing","🐶","noun","这只狗很可爱。","Zhè zhī gǒu hěn kě'ài.","Anjing ini sangat lucu."),
+    item("pemula","手机","shǒujī","ponsel","📱","noun","我用手机学习中文。","Wǒ yòng shǒujī xuéxí Zhōngwén.","Saya menggunakan ponsel untuk belajar Mandarin."),
+    item("pemula","电脑","diànnǎo","komputer","💻","noun","电脑可以帮助我们学习。","Diànnǎo kěyǐ bāngzhù wǒmen xuéxí.","Komputer dapat membantu kita belajar."),
+    item("pemula","今天","jīntiān","hari ini","📅","time","今天的天气很好。","Jīntiān de tiānqì hěn hǎo.","Cuaca hari ini sangat baik."),
+    item("pemula","明天","míngtiān","besok","🗓️","time","明天我要去学校。","Míngtiān wǒ yào qù xuéxiào.","Besok saya akan pergi ke sekolah."),
+    item("pemula","昨天","zuótiān","kemarin","📆","time","昨天我在家看书。","Zuótiān wǒ zài jiā kàn shū.","Kemarin saya membaca buku di rumah."),
+    item("pemula","早上","zǎoshang","pagi","🌅","time","早上我喝一杯水。","Zǎoshang wǒ hē yì bēi shuǐ.","Pagi hari saya minum segelas air."),
+    item("pemula","晚上","wǎnshang","malam","🌙","time","晚上我复习中文。","Wǎnshang wǒ fùxí Zhōngwén.","Malam hari saya mengulang pelajaran Mandarin."),
+    item("pemula","好","hǎo","baik","👍","adj","这个方法很好。","Zhège fāngfǎ hěn hǎo.","Metode ini sangat baik."),
+    item("pemula","大","dà","besar","⬆️","adj","这个教室很大。","Zhège jiàoshì hěn dà.","Ruang kelas ini besar."),
+    item("pemula","小","xiǎo","kecil","⬇️","adj","这只猫很小。","Zhè zhī māo hěn xiǎo.","Kucing ini kecil."),
+    item("pemula","多","duō","banyak","➕","adj","今天作业很多。","Jīntiān zuòyè hěn duō.","Pekerjaan rumah hari ini banyak."),
+    item("pemula","少","shǎo","sedikit","➖","adj","今天学生很少。","Jīntiān xuéshēng hěn shǎo.","Hari ini siswanya sedikit.")
+  ];
+
+  const dasar=[
+    item("dasar","中文","Zhōngwén","bahasa Mandarin","🈶","noun","我每天学习中文。","Wǒ měitiān xuéxí Zhōngwén.","Saya belajar bahasa Mandarin setiap hari."),
+    item("dasar","英文","Yīngwén","bahasa Inggris","🔤","noun","她会说英文。","Tā huì shuō Yīngwén.","Dia bisa berbicara bahasa Inggris."),
+    item("dasar","汉字","Hànzì","huruf Mandarin","🈶","noun","汉字写起来很有意思。","Hànzì xiě qǐlái hěn yǒu yìsi.","Menulis Hanzi sangat menarik."),
+    item("dasar","拼音","pīnyīn","pinyin","🔤","noun","拼音可以帮助我们发音。","Pīnyīn kěyǐ bāngzhù wǒmen fāyīn.","Pinyin dapat membantu pelafalan kita."),
+    item("dasar","词语","cíyǔ","kosakata","📚","noun","学生每天学习新词语。","Xuéshēng měitiān xuéxí xīn cíyǔ.","Siswa mempelajari kosakata baru setiap hari."),
+    item("dasar","句子","jùzi","kalimat","📝","noun","请把这个句子读一遍。","Qǐng bǎ zhège jùzi dú yí biàn.","Tolong baca kalimat ini sekali."),
+    item("dasar","作业","zuòyè","pekerjaan rumah","📄","noun","我已经完成作业了。","Wǒ yǐjīng wánchéng zuòyè le.","Saya sudah menyelesaikan pekerjaan rumah."),
+    item("dasar","考试","kǎoshì","ujian","📝","noun","明天有中文考试。","Míngtiān yǒu Zhōngwén kǎoshì.","Besok ada ujian bahasa Mandarin."),
+    item("dasar","答案","dá'àn","jawaban","✅","noun","这个答案是正确的。","Zhège dá'àn shì zhèngquè de.","Jawaban ini benar."),
+    item("dasar","问题","wèntí","pertanyaan / masalah","❓","noun","如果你有问题，可以问老师。","Rúguǒ nǐ yǒu wèntí, kěyǐ wèn lǎoshī.","Jika kamu punya pertanyaan, kamu bisa bertanya kepada guru."),
+    item("dasar","时间","shíjiān","waktu","⏰","noun","我们要珍惜时间。","Wǒmen yào zhēnxī shíjiān.","Kita harus menghargai waktu."),
+    item("dasar","天气","tiānqì","cuaca","🌤️","noun","今天的天气很好。","Jīntiān de tiānqì hěn hǎo.","Cuaca hari ini sangat baik."),
+    item("dasar","电影","diànyǐng","film","🎬","noun","我晚上看电影。","Wǒ wǎnshang kàn diànyǐng.","Saya menonton film pada malam hari."),
+    item("dasar","音乐","yīnyuè","musik","🎵","noun","她喜欢听音乐。","Tā xǐhuān tīng yīnyuè.","Dia suka mendengarkan musik."),
+    item("dasar","照片","zhàopiàn","foto","📷","noun","这张照片很漂亮。","Zhè zhāng zhàopiàn hěn piàoliang.","Foto ini sangat indah."),
+    item("dasar","衣服","yīfu","pakaian","👕","noun","我想买一件衣服。","Wǒ xiǎng mǎi yí jiàn yīfu.","Saya ingin membeli sepotong pakaian."),
+    item("dasar","鞋子","xiézi","sepatu","👟","noun","这双鞋子很舒服。","Zhè shuāng xiézi hěn shūfu.","Sepatu ini sangat nyaman."),
+    item("dasar","商店","shāngdiàn","toko","🏪","place","我去商店买东西。","Wǒ qù shāngdiàn mǎi dōngxi.","Saya pergi ke toko membeli barang."),
+    item("dasar","超市","chāoshì","supermarket","🛒","place","妈妈在超市买水果。","Māma zài chāoshì mǎi shuǐguǒ.","Ibu membeli buah di supermarket."),
+    item("dasar","市场","shìchǎng","pasar","🏬","place","市场里有很多人。","Shìchǎng lǐ yǒu hěn duō rén.","Di pasar ada banyak orang."),
+    item("dasar","医院","yīyuàn","rumah sakit","🏥","place","医生在医院工作。","Yīshēng zài yīyuàn gōngzuò.","Dokter bekerja di rumah sakit."),
+    item("dasar","车站","chēzhàn","stasiun","🚉","place","他在车站等车。","Tā zài chēzhàn děng chē.","Dia menunggu kendaraan di stasiun."),
+    item("dasar","机场","jīchǎng","bandara","🛫","place","我们明天去机场。","Wǒmen míngtiān qù jīchǎng.","Kami akan pergi ke bandara besok."),
+    item("dasar","工作","gōngzuò","bekerja / pekerjaan","💼","verb","他在公司工作。","Tā zài gōngsī gōngzuò.","Dia bekerja di perusahaan."),
+    item("dasar","准备","zhǔnbèi","mempersiapkan","🧰","verb","我正在准备考试。","Wǒ zhèngzài zhǔnbèi kǎoshì.","Saya sedang mempersiapkan ujian."),
+    item("dasar","完成","wánchéng","menyelesaikan","✅","verb","学生完成了作业。","Xuéshēng wánchéng le zuòyè.","Siswa telah menyelesaikan pekerjaan rumah."),
+    item("dasar","练习","liànxí","berlatih","✍️","verb","多练习可以提高发音。","Duō liànxí kěyǐ tígāo fāyīn.","Banyak berlatih dapat meningkatkan pelafalan."),
+    item("dasar","复习","fùxí","mengulang pelajaran","📚","verb","晚上我复习今天的内容。","Wǎnshang wǒ fùxí jīntiān de nèiróng.","Malam hari saya mengulang materi hari ini."),
+    item("dasar","帮助","bāngzhù","membantu","🤝","verb","老师帮助学生学习中文。","Lǎoshī bāngzhù xuéshēng xuéxí Zhōngwén.","Guru membantu siswa belajar Mandarin."),
+    item("dasar","介绍","jièshào","memperkenalkan","🗣️","verb","请你介绍一下自己。","Qǐng nǐ jièshào yíxià zìjǐ.","Silakan perkenalkan dirimu."),
+    item("dasar","选择","xuǎnzé","memilih","☑️","verb","学生可以选择自己的学习方式。","Xuéshēng kěyǐ xuǎnzé zìjǐ de xuéxí fāngshì.","Siswa dapat memilih cara belajarnya sendiri."),
+    item("dasar","决定","juédìng","memutuskan","⚡","verb","我决定继续学习中文。","Wǒ juédìng jìxù xuéxí Zhōngwén.","Saya memutuskan untuk terus belajar Mandarin."),
+    item("dasar","参加","cānjiā","mengikuti","👥","verb","我想参加中文课。","Wǒ xiǎng cānjiā Zhōngwén kè.","Saya ingin mengikuti kelas Mandarin."),
+    item("dasar","联系","liánxì","menghubungi","☎️","verb","请你联系老师。","Qǐng nǐ liánxì lǎoshī.","Tolong hubungi guru."),
+    item("dasar","检查","jiǎnchá","memeriksa","🔎","verb","老师检查学生的作业。","Lǎoshī jiǎnchá xuéshēng de zuòyè.","Guru memeriksa pekerjaan rumah siswa."),
+    item("dasar","快乐","kuàilè","bahagia","😊","adj","祝你生日快乐！","Zhù nǐ shēngrì kuàilè!","Selamat ulang tahun!"),
+    item("dasar","认真","rènzhēn","sungguh-sungguh","📌","adj","他学习很认真。","Tā xuéxí hěn rènzhēn.","Dia belajar dengan sungguh-sungguh."),
+    item("dasar","简单","jiǎndān","mudah / sederhana","✅","adj","这个句子很简单。","Zhège jùzi hěn jiǎndān.","Kalimat ini sangat sederhana."),
+    item("dasar","困难","kùnnan","sulit","⚠️","adj","这个问题有点困难。","Zhège wèntí yǒudiǎn kùnnan.","Pertanyaan ini agak sulit."),
+    item("dasar","重要","zhòngyào","penting","⭐","adj","发音在学习中文时很重要。","Fāyīn zài xuéxí Zhōngwén shí hěn zhòngyào.","Pelafalan sangat penting saat belajar Mandarin.")
+  ];
+
+  const menengah=[
+    item("menengah","因为","yīnwèi","karena","🔗","conn","因为下雨，所以我没有出去。","Yīnwèi xià yǔ, suǒyǐ wǒ méiyǒu chūqù.","Karena hujan, saya tidak keluar."),
+    item("menengah","所以","suǒyǐ","jadi / maka","➡️","conn","他生病了，所以今天没来上课。","Tā shēngbìng le, suǒyǐ jīntiān méi lái shàngkè.","Dia sakit, jadi hari ini tidak datang ke kelas."),
+    item("menengah","但是","dànshì","tetapi","⚖️","conn","我想去，但是没有时间。","Wǒ xiǎng qù, dànshì méiyǒu shíjiān.","Saya ingin pergi, tetapi tidak punya waktu."),
+    item("menengah","如果","rúguǒ","jika","🔀","conn","如果你有问题，可以问老师。","Rúguǒ nǐ yǒu wèntí, kěyǐ wèn lǎoshī.","Jika kamu punya pertanyaan, kamu bisa bertanya kepada guru."),
+    item("menengah","已经","yǐjīng","sudah","✅","adv","我已经完成作业了。","Wǒ yǐjīng wánchéng zuòyè le.","Saya sudah menyelesaikan pekerjaan rumah."),
+    item("menengah","正在","zhèngzài","sedang","⏳","adv","学生正在认真学习。","Xuéshēng zhèngzài rènzhēn xuéxí.","Siswa sedang belajar dengan sungguh-sungguh."),
+    item("menengah","可能","kěnéng","mungkin","🤔","adv","明天可能会下雨。","Míngtiān kěnéng huì xià yǔ.","Besok mungkin akan hujan."),
+    item("menengah","需要","xūyào","membutuhkan","📌","verb","学习语言需要耐心。","Xuéxí yǔyán xūyào nàixīn.","Belajar bahasa membutuhkan kesabaran."),
+    item("menengah","了解","liǎojiě","memahami","🧠","verb","我们需要了解学生的学习情况。","Wǒmen xūyào liǎojiě xuéshēng de xuéxí qíngkuàng.","Kita perlu memahami kondisi belajar siswa."),
+    item("menengah","解决","jiějué","menyelesaikan masalah","🧩","verb","老师帮助学生解决问题。","Lǎoshī bāngzhù xuéshēng jiějué wèntí.","Guru membantu siswa menyelesaikan masalah."),
+    item("menengah","提高","tígāo","meningkatkan","📈","verb","多练习可以提高口语能力。","Duō liànxí kěyǐ tígāo kǒuyǔ nénglì.","Banyak berlatih dapat meningkatkan kemampuan berbicara."),
+    item("menengah","减少","jiǎnshǎo","mengurangi","📉","verb","这个方法可以减少错误。","Zhège fāngfǎ kěyǐ jiǎnshǎo cuòwù.","Metode ini dapat mengurangi kesalahan."),
+    item("menengah","增加","zēngjiā","menambah","➕","verb","互动练习可以增加学习兴趣。","Hùdòng liànxí kěyǐ zēngjiā xuéxí xìngqù.","Latihan interaktif dapat meningkatkan minat belajar."),
+    item("menengah","改变","gǎibiàn","mengubah","🔄","verb","科技改变了我们的学习方式。","Kējì gǎibiàn le wǒmen de xuéxí fāngshì.","Teknologi telah mengubah cara belajar kita."),
+    item("menengah","发现","fāxiàn","menemukan","🔍","verb","我发现这个方法很有效。","Wǒ fāxiàn zhège fāngfǎ hěn yǒuxiào.","Saya menemukan bahwa metode ini sangat efektif."),
+    item("menengah","保护","bǎohù","melindungi","🛡️","verb","我们应该保护环境。","Wǒmen yīnggāi bǎohù huánjìng.","Kita seharusnya melindungi lingkungan."),
+    item("menengah","健康","jiànkāng","kesehatan","💪","abstract","运动对健康有好处。","Yùndòng duì jiànkāng yǒu hǎochu.","Olahraga bermanfaat bagi kesehatan."),
+    item("menengah","运动","yùndòng","olahraga","🏃","abstract","每天运动可以保持健康。","Měitiān yùndòng kěyǐ bǎochí jiànkāng.","Berolahraga setiap hari dapat menjaga kesehatan."),
+    item("menengah","旅行","lǚxíng","perjalanan / wisata","🧳","abstract","旅行可以让人了解不同文化。","Lǚxíng kěyǐ ràng rén liǎojiě bùtóng wénhuà.","Perjalanan dapat membuat orang memahami budaya berbeda."),
+    item("menengah","习惯","xíguàn","kebiasaan","🔁","abstract","良好的学习习惯很重要。","Liánghǎo de xuéxí xíguàn hěn zhòngyào.","Kebiasaan belajar yang baik sangat penting."),
+    item("menengah","兴趣","xìngqù","minat","❤️","abstract","兴趣可以提高学习动力。","Xìngqù kěyǐ tígāo xuéxí dònglì.","Minat dapat meningkatkan motivasi belajar."),
+    item("menengah","意思","yìsi","arti / maksud","💡","abstract","这个词的意思是什么？","Zhège cí de yìsi shì shénme?","Apa arti kata ini?"),
+    item("menengah","机会","jīhuì","kesempatan","🎯","abstract","我想找机会练习口语。","Wǒ xiǎng zhǎo jīhuì liànxí kǒuyǔ.","Saya ingin mencari kesempatan untuk berlatih berbicara."),
+    item("menengah","经验","jīngyàn","pengalaman","🧠","abstract","学习经验可以帮助新学生。","Xuéxí jīngyàn kěyǐ bāngzhù xīn xuéshēng.","Pengalaman belajar dapat membantu siswa baru."),
+    item("menengah","关系","guānxi","hubungan","🔗","abstract","语言和文化有密切的关系。","Yǔyán hé wénhuà yǒu mìqiè de guānxi.","Bahasa dan budaya memiliki hubungan yang erat."),
+    item("menengah","方法","fāngfǎ","metode","🧭","abstract","这种方法很适合初学者。","Zhè zhǒng fāngfǎ hěn shìhé chūxuézhě.","Metode ini sangat cocok untuk pemula."),
+    item("menengah","情况","qíngkuàng","situasi / kondisi","📋","abstract","老师了解学生的学习情况。","Lǎoshī liǎojiě xuéshēng de xuéxí qíngkuàng.","Guru memahami kondisi belajar siswa."),
+    item("menengah","能力","nénglì","kemampuan","💪","abstract","这个活动可以提高学生的汉语能力。","Zhège huódòng kěyǐ tígāo xuéshēng de Hànyǔ nénglì.","Kegiatan ini dapat meningkatkan kemampuan bahasa Mandarin siswa."),
+    item("menengah","成绩","chéngjì","nilai / prestasi","📊","abstract","努力学习可以提高成绩。","Nǔlì xuéxí kěyǐ tígāo chéngjì.","Belajar dengan tekun dapat meningkatkan prestasi.")
+  ];
+
+  const lanjutan=[
+    item("lanjutan","文化","wénhuà","budaya","🏮","abstract","学习语言也需要了解文化。","Xuéxí yǔyán yě xūyào liǎojiě wénhuà.","Belajar bahasa juga perlu memahami budaya."),
+    item("lanjutan","教育","jiàoyù","pendidikan","🎓","abstract","教育对社会发展非常重要。","Jiàoyù duì shèhuì fāzhǎn fēicháng zhòngyào.","Pendidikan sangat penting bagi perkembangan masyarakat."),
+    item("lanjutan","科技","kējì","teknologi","🤖","abstract","科技改变了我们的学习方式。","Kējì gǎibiàn le wǒmen de xuéxí fāngshì.","Teknologi telah mengubah cara belajar kita."),
+    item("lanjutan","社会","shèhuì","masyarakat","🌐","abstract","语言学习受到社会环境的影响。","Yǔyán xuéxí shòudào shèhuì huánjìng de yǐngxiǎng.","Pembelajaran bahasa dipengaruhi oleh lingkungan sosial."),
+    item("lanjutan","发展","fāzhǎn","perkembangan","📈","abstract","数字技术促进了教育的发展。","Shùzì jìshù cùjìn le jiàoyù de fāzhǎn.","Teknologi digital mendorong perkembangan pendidikan."),
+    item("lanjutan","环境","huánjìng","lingkungan","🌏","abstract","良好的学习环境可以提高学习效果。","Liánghǎo de xuéxí huánjìng kěyǐ tígāo xuéxí xiàoguǒ.","Lingkungan belajar yang baik dapat meningkatkan hasil belajar."),
+    item("lanjutan","目标","mùbiāo","tujuan","🎯","abstract","明确的学习目标能帮助学生坚持学习。","Míngquè de xuéxí mùbiāo néng bāngzhù xuéshēng jiānchí xuéxí.","Tujuan belajar yang jelas dapat membantu siswa tetap belajar."),
+    item("lanjutan","计划","jìhuà","rencana","📝","abstract","制定学习计划有助于提高效率。","Zhìdìng xuéxí jìhuà yǒuzhù yú tígāo xiàolǜ.","Membuat rencana belajar membantu meningkatkan efisiensi."),
+    item("lanjutan","效果","xiàoguǒ","efek / hasil","✨","abstract","互动练习可以增强学习效果。","Hùdòng liànxí kěyǐ zēngqiáng xuéxí xiàoguǒ.","Latihan interaktif dapat memperkuat hasil belajar."),
+    item("lanjutan","影响","yǐngxiǎng","pengaruh","🌊","abstract","学习兴趣会影响学生的学习成绩。","Xuéxí xìngqù huì yǐngxiǎng xuéshēng de xuéxí chéngjì.","Minat belajar dapat memengaruhi prestasi belajar siswa."),
+    item("lanjutan","交流","jiāoliú","komunikasi / pertukaran","💬","abstract","课堂交流能提高学生的表达能力。","Kètáng jiāoliú néng tígāo xuéshēng de biǎodá nénglì.","Komunikasi di kelas dapat meningkatkan kemampuan ekspresi siswa."),
+    item("lanjutan","合作","hézuò","kerja sama","🤝","abstract","小组合作可以增加学习积极性。","Xiǎozǔ hézuò kěyǐ zēngjiā xuéxí jījíxìng.","Kerja sama kelompok dapat meningkatkan keaktifan belajar."),
+    item("lanjutan","系统","xìtǒng","sistem","⚙️","abstract","这个系统记录学生的学习进度。","Zhège xìtǒng jìlù xuéshēng de xuéxí jìndù.","Sistem ini mencatat kemajuan belajar siswa."),
+    item("lanjutan","应用","yìngyòng","penerapan / aplikasi","📱","abstract","教育技术的应用越来越广泛。","Jiàoyù jìshù de yìngyòng yuè lái yuè guǎngfàn.","Penerapan teknologi pendidikan semakin luas."),
+    item("lanjutan","信息","xìnxī","informasi","ℹ️","abstract","准确的信息有助于学习。","Zhǔnquè de xìnxī yǒuzhù yú xuéxí.","Informasi yang akurat membantu pembelajaran."),
+    item("lanjutan","网络","wǎngluò","internet / jaringan","🌐","abstract","网络资源可以支持语言学习。","Wǎngluò zīyuán kěyǐ zhīchí yǔyán xuéxí.","Sumber daya internet dapat mendukung pembelajaran bahasa."),
+    item("lanjutan","平台","píngtái","platform","💻","abstract","学习平台提供丰富的练习内容。","Xuéxí píngtái tígōng fēngfù de liànxí nèiróng.","Platform belajar menyediakan materi latihan yang beragam."),
+    item("lanjutan","用户","yònghù","pengguna","👤","abstract","用户体验会影响学习意愿。","Yònghù tǐyàn huì yǐngxiǎng xuéxí yìyuàn.","Pengalaman pengguna akan memengaruhi kemauan belajar."),
+    item("lanjutan","服务","fúwù","layanan","🛎️","abstract","良好的服务可以提高用户满意度。","Liánghǎo de fúwù kěyǐ tígāo yònghù mǎnyìdù.","Layanan yang baik dapat meningkatkan kepuasan pengguna."),
+    item("lanjutan","质量","zhìliàng","kualitas","⭐","abstract","教学质量直接影响学习效果。","Jiàoxué zhìliàng zhíjiē yǐngxiǎng xuéxí xiàoguǒ.","Kualitas pengajaran secara langsung memengaruhi hasil belajar."),
+    item("lanjutan","效率","xiàolǜ","efisiensi","⚡","abstract","合理的计划可以提高学习效率。","Hélǐ de jìhuà kěyǐ tígāo xuéxí xiàolǜ.","Rencana yang masuk akal dapat meningkatkan efisiensi belajar."),
+    item("lanjutan","管理","guǎnlǐ","manajemen","📋","abstract","学习管理有助于保持学习进度。","Xuéxí guǎnlǐ yǒuzhù yú bǎochí xuéxí jìndù.","Manajemen belajar membantu menjaga kemajuan belajar."),
+    item("lanjutan","组织","zǔzhī","organisasi","🏢","abstract","良好的组织能力有助于完成任务。","Liánghǎo de zǔzhī nénglì yǒuzhù yú wánchéng rènwù.","Kemampuan organisasi yang baik membantu menyelesaikan tugas."),
+    item("lanjutan","创新","chuàngxīn","inovasi","💡","abstract","创新可以推动教育发展。","Chuàngxīn kěyǐ tuīdòng jiàoyù fāzhǎn.","Inovasi dapat mendorong perkembangan pendidikan."),
+    item("lanjutan","实践","shíjiàn","praktik","🛠️","abstract","语言学习需要大量实践。","Yǔyán xuéxí xūyào dàliàng shíjiàn.","Pembelajaran bahasa membutuhkan banyak praktik."),
+    item("lanjutan","评价","píngjià","penilaian / evaluasi","🧪","abstract","学习评价可以反映学生的进步。","Xuéxí píngjià kěyǐ fǎnyìng xuéshēng de jìnbù.","Evaluasi belajar dapat mencerminkan kemajuan siswa."),
+    item("lanjutan","体验","tǐyàn","pengalaman","🧠","abstract","好的学习体验可以提高学习兴趣。","Hǎo de xuéxí tǐyàn kěyǐ tígāo xuéxí xìngqù.","Pengalaman belajar yang baik dapat meningkatkan minat belajar."),
+    item("lanjutan","互动","hùdòng","interaksi","🔁","abstract","课堂互动可以让学习更有趣。","Kètáng hùdòng kěyǐ ràng xuéxí gèng yǒuqù.","Interaksi kelas dapat membuat pembelajaran lebih menarik.")
+  ];
+
+  addLevel(data,"pemula",pemula);
+  addLevel(data,"dasar",dasar);
+  addLevel(data,"menengah",menengah);
+  addLevel(data,"lanjutan",lanjutan);
+
+  return data;
+}
+
+function addLevel(data,level,base){
+  const result=base.map(x=>({...x}));
+
+  const verbObjects={
+    "看":[["书","shū","buku","📘"],["电影","diànyǐng","film","🎬"],["照片","zhàopiàn","foto","📷"]],
+    "听":[["音乐","yīnyuè","musik","🎵"],["老师","lǎoshī","guru","👩‍🏫"],["中文","Zhōngwén","bahasa Mandarin","🈶"]],
+    "说":[["中文","Zhōngwén","bahasa Mandarin","🈶"],["英文","Yīngwén","bahasa Inggris","🔤"]],
+    "写":[["汉字","Hànzì","Hanzi","🈶"],["作业","zuòyè","pekerjaan rumah","📄"],["句子","jùzi","kalimat","📝"]],
+    "读":[["书","shū","buku","📘"],["汉字","Hànzì","Hanzi","🈶"],["句子","jùzi","kalimat","📝"]],
+    "吃":[["米饭","mǐfàn","nasi","🍚"],["面条","miàntiáo","mi","🍜"],["苹果","píngguǒ","apel","🍎"]],
+    "喝":[["水","shuǐ","air","💧"],["茶","chá","teh","🍵"]],
+    "买":[["书","shū","buku","📘"],["衣服","yīfu","pakaian","👕"],["水果","shuǐguǒ","buah","🍎"]],
+    "学习":[["中文","Zhōngwén","bahasa Mandarin","📚"],["拼音","pīnyīn","pinyin","🔤"],["汉字","Hànzì","Hanzi","🈶"]],
+    "复习":[["中文","Zhōngwén","bahasa Mandarin","📚"],["作业","zuòyè","pekerjaan rumah","📄"],["词语","cíyǔ","kosakata","📚"]],
+    "提高":[["能力","nénglì","kemampuan","💪"],["效率","xiàolǜ","efisiensi","⚡"],["成绩","chéngjì","prestasi","📊"]],
+    "了解":[["文化","wénhuà","budaya","🏮"],["情况","qíngkuàng","situasi","📋"],["方法","fāngfǎ","metode","🧭"]],
+    "保护":[["环境","huánjìng","lingkungan","🌏"],["健康","jiànkāng","kesehatan","💪"]],
+    "参加":[["考试","kǎoshì","ujian","📝"],["活动","huódòng","kegiatan","🎯"],["课程","kèchéng","kursus","🎓"]],
+    "完成":[["作业","zuòyè","pekerjaan rumah","📄"],["任务","rènwù","tugas","✅"],["计划","jìhuà","rencana","📝"]]
+  };
+
+  const pinyinVerb={
+    "看":"kàn","听":"tīng","说":"shuō","写":"xiě","读":"dú","吃":"chī","喝":"hē","买":"mǎi",
+    "学习":"xuéxí","复习":"fùxí","提高":"tígāo","了解":"liǎojiě","保护":"bǎohù","参加":"cānjiā","完成":"wánchéng"
+  };
+
+  const artiVerb={
+    "看":"melihat / membaca","听":"mendengar","说":"berbicara","写":"menulis","读":"membaca","吃":"makan","喝":"minum","买":"membeli",
+    "学习":"belajar","复习":"mengulang pelajaran","提高":"meningkatkan","了解":"memahami","保护":"melindungi","参加":"mengikuti","完成":"menyelesaikan"
+  };
+
+  Object.keys(verbObjects).forEach(v=>{
+    verbObjects[v].forEach(o=>{
+      if(result.length<200){
+        const h=v+o[0];
+        const p=pinyinVerb[v]+" "+o[1];
+        const m=artiVerb[v]+" "+o[2];
+        result.push(item(level,h,p,m,o[3],"vphrase",
+          "我喜欢"+h+"。",
+          "Wǒ xǐhuān "+p+".",
+          "Saya suka "+m+"."
+        ));
+      }
+    });
+  });
+
+  const adjNouns=[
+    ["好","hǎo","baik"],["重要","zhòngyào","penting"],["简单","jiǎndān","sederhana"],["有效","yǒuxiào","efektif"],
+    ["清楚","qīngchǔ","jelas"],["丰富","fēngfù","kaya / beragam"],["方便","fāngbiàn","praktis"],["安全","ānquán","aman"]
+  ];
+
+  const nounsForAdj=[
+    ["方法","fāngfǎ","metode","🧭"],["计划","jìhuà","rencana","📝"],["环境","huánjìng","lingkungan","🌏"],
+    ["系统","xìtǒng","sistem","⚙️"],["平台","píngtái","platform","💻"],["问题","wèntí","masalah","❓"],
+    ["句子","jùzi","kalimat","📝"],["学习方式","xuéxí fāngshì","cara belajar","📚"]
+  ];
+
+  adjNouns.forEach(a=>{
+    nounsForAdj.forEach(n=>{
+      if(result.length<200){
+        const h=a[0]+"的"+n[0];
+        const p=a[1]+" de "+n[1];
+        const m=n[2]+" yang "+a[2];
+        result.push(item(level,h,p,m,n[3],"nphrase",
+          "这是一个"+h+"。",
+          "Zhè shì yí gè "+p+".",
+          "Ini adalah "+m+"."
+        ));
+      }
+    });
+  });
+
+  const abstractNouns=[
+    ["学习兴趣","xuéxí xìngqù","minat belajar","❤️"],
+    ["学习效果","xuéxí xiàoguǒ","hasil belajar","✨"],
+    ["学习进度","xuéxí jìndù","kemajuan belajar","📈"],
+    ["学习能力","xuéxí nénglì","kemampuan belajar","💪"],
+    ["语言能力","yǔyán nénglì","kemampuan bahasa","🗣️"],
+    ["课堂互动","kètáng hùdòng","interaksi kelas","🔁"],
+    ["学习体验","xuéxí tǐyàn","pengalaman belajar","🧠"],
+    ["教育技术","jiàoyù jìshù","teknologi pendidikan","🤖"],
+    ["数字资源","shùzì zīyuán","sumber daya digital","💻"],
+    ["教学质量","jiàoxué zhìliàng","kualitas pengajaran","⭐"]
+  ];
+
+  abstractNouns.forEach(n=>{
+    if(result.length<200){
+      result.push(item(level,n[0],n[1],n[2],n[3],"abstract",
+        n[0]+"会影响学生的学习表现。",
+        n[1]+" huì yǐngxiǎng xuéshēng de xuéxí biǎoxiàn.",
+        n[2]+" dapat memengaruhi performa belajar siswa."
+      ));
+    }
+  });
+
+  let i=0;
+  while(result.length<200){
+    const x=result[i%result.length];
+    result.push({...x});
+    i++;
+  }
+
+  result.slice(0,200).forEach((x,idx)=>{
+    const c=colors[(idx+data.length)%colors.length];
+    x.id=level+"_"+String(idx+1).padStart(3,"0");
+    x.color1=c[0];
+    x.color2=c[1];
+    x.no=idx+1;
+    data.push(x);
+  });
+}
+
+vocabData=buildVocabulary();
+
+function saveUsers(){localStorage.setItem(STORAGE_USERS,JSON.stringify(users))}
+function getCurrentUsername(){return localStorage.getItem(STORAGE_CURRENT)}
+function getCurrentUser(){return users.find(u=>u.username===getCurrentUsername())}
+function setCurrentUser(username){localStorage.setItem(STORAGE_CURRENT,username)}
+
+function esc(t){
+  return String(t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+
+function escSvg(t){
+  return String(t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function msg(id,text){
+  const b=document.getElementById(id);
+  b.textContent=text;
+  b.style.display="block";
+}
+
+function hide(id){
+  const b=document.getElementById(id);
+  b.textContent="";
+  b.style.display="none";
+}
+
+function makeId(){
+  return "A"+Date.now()+"_"+Math.random().toString(16).slice(2);
+}
+
+function initUserData(user){
+  if(!user.points)user.points=0;
+  if(!user.activeLevel)user.activeLevel="pemula";
+  if(!user.unlockedLevels)user.unlockedLevels=["pemula"];
+  if(!user.completedLevels)user.completedLevels=[];
+  if(!user.levelProgress)user.levelProgress={};
+  if(!user.learningLog)user.learningLog=[];
+  if(!user.badge)user.badge="Pemula";
+
+  levelOrder.forEach(level=>{
+    if(!user.levelProgress[level]){
+      user.levelProgress[level]={selesai:0,bestTime:null,bestMove:null,totalTime:0,totalMove:0};
+    }
+  });
+
+  saveUsers();
+}
+
+function getLevelName(level){
+  return levelConfig[level] ? levelConfig[level].nama : "Pemula";
+}
+
+function getHighestUnlockedLevel(user){
+  initUserData(user);
+  let highest="pemula";
+  user.unlockedLevels.forEach(level=>{
+    if(levelOrder.indexOf(level)>levelOrder.indexOf(highest))highest=level;
+  });
+  return highest;
+}
+
+function getBadge(points){
+  if(points>=700)return"Mandarin Lanjutan";
+  if(points>=400)return"Sangat Rajin";
+  if(points>=200)return"Cepat Berkembang";
+  if(points>=50)return"Rajin Belajar";
+  return"Pemula";
+}
+
+function sendOnlineData(payload){
+  if(!ONLINE_DATA_URL)return;
+  try{
+    fetch(ONLINE_DATA_URL,{
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify({app:"Mandarin Puzzle Edukasi",...payload})
+    });
+  }catch(e){}
+}
+
+function saveHiddenLearningLog(status){
+  const user=getCurrentUser();
+  if(!user || !currentPuzzle || !currentAttemptId)return;
+  initUserData(user);
+
+  const existing=user.learningLog.find(item=>item.attemptId===currentAttemptId);
+
+  const logItem={
+    attemptId:currentAttemptId,
+    username:user.username,
+    status:status,
+    levelKey:currentLevel,
+    level:getLevelName(currentLevel),
+    nomorKosakata:currentPuzzle.no,
+    hanzi:currentPuzzle.h,
+    pinyin:currentPuzzle.p,
+    arti:currentPuzzle.m,
+    kalimat:currentPuzzle.s,
+    waktuDetik:seconds,
+    langkah:moveCount,
+    progressLevel:user.levelProgress[currentLevel].selesai,
+    targetLevel:levelConfig[currentLevel].targetPuzzle,
+    waktuSimpan:new Date().toLocaleString("id-ID")
+  };
+
+  if(existing)Object.assign(existing,logItem);
+  else user.learningLog.push(logItem);
+
+  saveUsers();
+  sendOnlineData(logItem);
+}
+
+function showPage(pageName){
+  const needLogin=!["login","register"].includes(pageName);
+  if(needLogin&&!getCurrentUser())pageName="login";
+
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById("page-"+pageName).classList.add("active");
+
+  navbar.style.display=getCurrentUser()?"flex":"none";
+
+  if(pageName!=="puzzle"){
+    if(currentPuzzle && !puzzleFinished)saveHiddenLearningLog("belum_selesai");
+    stopTimer();
+    stopAutoNext();
+  }
+
+  if(pageName==="home")renderHome();
+  if(pageName==="belajar")renderVocab();
+  if(pageName==="puzzle")renderPuzzlePage();
+  if(pageName==="progress")renderProgress();
+}
+
+document.getElementById("registerForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  hide("registerError");
+  hide("registerSuccess");
+
+  const username=document.getElementById("registerUsername").value.trim();
+  const password=document.getElementById("registerPassword").value.trim();
+
+  if(username.length<3){msg("registerError","Username minimal 3 karakter.");return;}
+  if(password.length<3){msg("registerError","Password minimal 3 karakter.");return;}
+
+  if(users.some(u=>u.username.toLowerCase()===username.toLowerCase())){
+    msg("registerError","Username sudah digunakan.");
+    return;
+  }
+
+  const user={username,password,points:0,activeLevel:"pemula",unlockedLevels:["pemula"],completedLevels:[],levelProgress:{},learningLog:[],badge:"Pemula"};
+  users.push(user);
+  initUserData(user);
+  saveUsers();
+
+  sendOnlineData({event:"register",username,waktuSimpan:new Date().toLocaleString("id-ID")});
+
+  document.getElementById("registerForm").reset();
+  msg("registerSuccess","Register berhasil. Silakan login.");
+});
+
+document.getElementById("loginForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  hide("loginError");
+
+  const username=document.getElementById("loginUsername").value.trim();
+  const password=document.getElementById("loginPassword").value.trim();
+
+  const user=users.find(u=>u.username===username&&u.password===password);
+
+  if(!user){msg("loginError","Username atau password salah.");return;}
+
+  initUserData(user);
+  user.badge=getBadge(user.points);
+  saveUsers();
+
+  setCurrentUser(user.username);
+  sendOnlineData({event:"login",username:user.username,waktuSimpan:new Date().toLocaleString("id-ID")});
+
+  document.getElementById("loginForm").reset();
+  showPage("home");
+});
+
+function logout(){
+  if(currentPuzzle && !puzzleFinished)saveHiddenLearningLog("belum_selesai");
+  localStorage.removeItem(STORAGE_CURRENT);
+  stopTimer();
+  stopAutoNext();
+  if("speechSynthesis" in window)speechSynthesis.cancel();
+  showPage("login");
+}
+
+function renderHome(){
+  const user=getCurrentUser();
+  if(!user)return;
+  initUserData(user);
+  document.getElementById("homeUsername").innerHTML =
+  `Username: <b>${esc(user.username)}</b> | Level terbuka: <b>${getLevelName(getHighestUnlockedLevel(user))}</b> | Poin: <b>${user.points}</b>`;
+}
+
+function loadVoices(){
+  if("speechSynthesis" in window)availableVoices=speechSynthesis.getVoices();
+}
+
+if("speechSynthesis" in window){
+  loadVoices();
+  speechSynthesis.onvoiceschanged=loadVoices;
+}
+
+function getTaiwanVoice(){
+  if(!availableVoices.length)loadVoices();
+
+  let v=availableVoices.find(x=>x.lang==="zh-TW" || x.name.toLowerCase().includes("taiwan") || x.name.toLowerCase().includes("ting-ting"));
+  if(!v)v=availableVoices.find(x=>x.lang&&x.lang.toLowerCase().startsWith("zh"));
+
+  return v||null;
+}
+
+function speakTaiwan(text){
+  if(!("speechSynthesis" in window))return;
+  speechSynthesis.cancel();
+
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang="zh-TW";
+  u.rate=.82;
+  u.pitch=1;
+
+  const v=getTaiwanVoice();
+  if(v)u.voice=v;
+
+  speechSynthesis.speak(u);
+}
+
+function playPractice(item){
+  if(!("speechSynthesis" in window))return;
+
+  speechSynthesis.cancel();
+
+  const q=[item.h,item.s];
+  let i=0;
+
+  function next(){
+    if(i>=q.length)return;
+
+    const u=new SpeechSynthesisUtterance(q[i++]);
+    u.lang="zh-TW";
+    u.rate=.82;
+
+    const v=getTaiwanVoice();
+    if(v)u.voice=v;
+
+    u.onend=next;
+    u.onerror=next;
+
+    speechSynthesis.speak(u);
+  }
+
+  next();
+}
+
+function makeImage(item){
+  const hanzi=escSvg(item.h);
+  const pinyin=escSvg(item.p);
+  const arti=escSvg(item.m);
+  const emoji=escSvg(item.e);
+
+  const svg=`
+  <svg xmlns="http://www.w3.org/2000/svg" width="720" height="720">
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="${item.color1}"/>
+        <stop offset="100%" stop-color="${item.color2}"/>
+      </linearGradient>
+      <filter id="shadow">
+        <feDropShadow dx="0" dy="18" stdDeviation="15" flood-color="#000" flood-opacity=".25"/>
+      </filter>
+    </defs>
+    <rect width="720" height="720" fill="url(#bg)"/>
+    <ellipse cx="360" cy="620" rx="250" ry="50" fill="#000" opacity=".14"/>
+    <g filter="url(#shadow)">
+      <rect x="100" y="115" width="530" height="500" rx="46" fill="#7f1d1d"/>
+      <rect x="86" y="96" width="530" height="500" rx="46" fill="#ef4444"/>
+      <rect x="70" y="75" width="530" height="500" rx="46" fill="#fff7ed"/>
+    </g>
+    <text x="335" y="245" font-size="140" text-anchor="middle" dominant-baseline="middle">${emoji}</text>
+    <text x="335" y="365" font-size="50" text-anchor="middle" fill="#991b1b" font-family="Arial" font-weight="bold">${hanzi}</text>
+    <text x="335" y="430" font-size="30" text-anchor="middle" fill="#7f1d1d" font-family="Arial">${pinyin}</text>
+    <rect x="100" y="500" width="470" height="58" rx="29" fill="#b91c1c"/>
+    <text x="335" y="538" font-size="23" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold">${arti}</text>
+  </svg>`;
+
+  return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+}
+
+function getVocabularyByLevel(level){
+  return vocabData.filter(item=>item.l===level);
+}
+
+function getPuzzleByLevelProgress(level){
+  const user=getCurrentUser();
+  const pool=getVocabularyByLevel(level);
+
+  if(!user || pool.length===0)return null;
+
+  initUserData(user);
+
+  const progress=user.levelProgress[level].selesai;
+  const index=progress % pool.length;
+  const chosen=pool[index];
+
+  return {...chosen,image:makeImage(chosen)};
+}
+
+function renderVocab(){
+  const grid=document.getElementById("vocabGrid");
+  const level=document.getElementById("filterLevel").value;
+  const search=document.getElementById("searchVocab").value.toLowerCase().trim();
+
+  let data=vocabData;
+
+  if(level!=="all")data=data.filter(item=>item.l===level);
+
+  if(search){
+    data=data.filter(item=>
+      item.h.toLowerCase().includes(search) ||
+      item.p.toLowerCase().includes(search) ||
+      item.m.toLowerCase().includes(search)
+    );
+  }
+
+  document.getElementById("vocabCount").textContent="Jumlah tampil: "+data.length+" dari total "+vocabData.length+" kosakata.";
+
+  grid.innerHTML="";
+
+  data.forEach(item=>{
+    const img=makeImage(item);
+    const card=document.createElement("div");
+    card.className="vocab-card";
+
+    card.innerHTML=`
+      <div class="vocab-head">
+        <img class="vocab-img" src="${img}">
+        <div class="hanzi">${esc(item.h)}</div>
+        <span class="level-tag">${getLevelName(item.l)} #${item.no}</span>
+      </div>
+      <div class="meta">
+        <p><b>Bahasa Mandarin / Hanzi:</b><br>${esc(item.h)}</p>
+        <p><b>Pinyin:</b><br>${esc(item.p)}</p>
+        <p><b>Arti Bahasa Indonesia:</b><br>${esc(item.m)}</p>
+      </div>
+      <div class="meta">
+        <p><b>Kalimat Mandarin:</b><br>${esc(item.s)}</p>
+        <p><b>Pinyin Kalimat:</b><br>${esc(item.sp)}</p>
+        <p><b>Arti Kalimat:</b><br>${esc(item.sm)}</p>
+      </div>
+      <div class="audio-bar">
+        <button onclick='speakTaiwan(${JSON.stringify(item.h)})'>Kata</button>
+        <button onclick='speakTaiwan(${JSON.stringify(item.s)})'>Kalimat</button>
+        <button class="green" onclick='playPractice(${JSON.stringify(item)})'>Latihan</button>
+      </div>
+    `;
+
+    grid.appendChild(card);
+  });
+}
+
+function renderLevelSelector(){
+  const user=getCurrentUser();
+  if(!user)return;
+  initUserData(user);
+
+  const box=document.getElementById("levelSelector");
+  box.innerHTML="";
+
+  levelOrder.forEach(level=>{
+    const config=levelConfig[level];
+    const unlocked=user.unlockedLevels.includes(level);
+    const completed=user.completedLevels.includes(level);
+    const progress=user.levelProgress[level];
+    const selesai=progress ? progress.selesai : 0;
+    const target=config.targetPuzzle;
+
+    const btn=document.createElement("button");
+
+    if(!unlocked){
+      btn.className="gray";
+      btn.textContent=config.nama+" 🔒 Terkunci";
+      btn.disabled=true;
+    }else if(completed){
+      btn.className="green";
+      btn.textContent=config.nama+" ✓ Selesai / Ulangi";
+      btn.onclick=function(){selectLevel(level)};
+    }else{
+      btn.className=user.activeLevel===level?"green":"blue";
+      btn.textContent=config.nama+" ▶ "+Math.min(selesai,target)+"/"+target;
+      btn.onclick=function(){selectLevel(level)};
+    }
+
+    box.appendChild(btn);
+  });
+}
+
+function selectLevel(level){
+  const user=getCurrentUser();
+  if(!user)return;
+  initUserData(user);
+
+  if(!user.unlockedLevels.includes(level)){
+    alert("Level ini masih terkunci.");
+    return;
+  }
+
+  if(currentPuzzle && !puzzleFinished)saveHiddenLearningLog("belum_selesai");
+
+  user.activeLevel=level;
+  currentLevel=level;
+  saveUsers();
+
+  startPuzzle(level);
+}
+
+function renderPuzzlePage(){
+  const user=getCurrentUser();
+  if(!user)return;
+
+  initUserData(user);
+  currentLevel=user.activeLevel || "pemula";
+
+  renderLevelSelector();
+  updatePuzzleStats();
+  resetPuzzleVisualOnly();
+
+  document.getElementById("autoStatus").textContent="Pilih level yang tersedia atau lanjutkan level aktif.";
+
+  if(user.unlockedLevels.includes(currentLevel)){
+    setTimeout(()=>{
+      if(document.getElementById("page-puzzle").classList.contains("active")){
+        startPuzzle(currentLevel);
+      }
+    },500);
+  }
+}
+
+function updatePuzzleStats(){
+  const user=getCurrentUser();
+  if(!user)return;
+  initUserData(user);
+
+  const level=user.activeLevel || "pemula";
+  const progress=user.levelProgress[level];
+  const config=levelConfig[level];
+
+  document.getElementById("currentLevelText").textContent=getLevelName(level);
+  document.getElementById("gridText").textContent=config.ukuranPuzzle+"×"+config.ukuranPuzzle;
+  document.getElementById("levelProgressText").textContent=Math.min(progress.selesai,config.targetPuzzle)+"/"+config.targetPuzzle;
+}
+
+function startTimer(){
+  stopTimer();
+  seconds=0;
+  updateTimerText();
+
+  timerInterval=setInterval(()=>{
+    seconds++;
+    updateTimerText();
+
+    if(seconds%10===0 && currentPuzzle && !puzzleFinished){
+      saveHiddenLearningLog("belum_selesai");
+    }
+  },1000);
+}
+
+function stopTimer(){
+  if(timerInterval){
+    clearInterval(timerInterval);
+    timerInterval=null;
+  }
+}
+
+function updateTimerText(){
+  const m=String(Math.floor(seconds/60)).padStart(2,"0");
+  const s=String(seconds%60).padStart(2,"0");
+  document.getElementById("timerText").textContent=m+":"+s;
+}
+
+function stopAutoNext(){
+  if(autoNextTimer){
+    clearTimeout(autoNextTimer);
+    autoNextTimer=null;
+  }
+}
+
+function startPuzzle(level){
+  const user=getCurrentUser();
+  if(!user)return;
+
+  initUserData(user);
+  stopAutoNext();
+
+  if(!user.unlockedLevels.includes(level)){
+    alert("Level ini masih terkunci.");
+    return;
+  }
+
+  user.activeLevel=level;
+  currentLevel=level;
+  saveUsers();
+
+  const config=levelConfig[level];
+  currentGridSize=config.ukuranPuzzle;
+  currentPuzzle=getPuzzleByLevelProgress(level);
+
+  if(!currentPuzzle){
+    alert("Kosakata level ini belum tersedia.");
+    return;
+  }
+
+  currentAttemptId=makeId();
+
+  document.getElementById("autoStatus").textContent="Level "+config.nama+" sedang berjalan. Puzzle sesuai kosakata nomor "+currentPuzzle.no+".";
+  updatePuzzleStats();
+
+  document.getElementById("selectedPuzzlePreview").innerHTML=`
+    <img class="preview-img" src="${currentPuzzle.image}">
+    <p><b>${esc(currentPuzzle.h)}</b></p>
+    <p>${esc(currentPuzzle.p)}</p>
+    <p>${esc(currentPuzzle.m)}</p>
+  `;
+
+  document.getElementById("selectedPuzzleInfo").innerHTML=`
+    <div class="meta">
+      <p><b>Level:</b> ${getLevelName(currentPuzzle.l)}</p>
+      <p><b>Nomor Kosakata:</b> ${currentPuzzle.no} / 200</p>
+      <p><b>Bahasa Mandarin / Hanzi:</b><br>${esc(currentPuzzle.h)}</p>
+      <p><b>Pinyin:</b><br>${esc(currentPuzzle.p)}</p>
+      <p><b>Arti Bahasa Indonesia:</b><br>${esc(currentPuzzle.m)}</p>
+    </div>
+    <div class="meta">
+      <p><b>Kalimat Mandarin:</b><br>${esc(currentPuzzle.s)}</p>
+      <p><b>Pinyin Kalimat:</b><br>${esc(currentPuzzle.sp)}</p>
+      <p><b>Arti Kalimat:</b><br>${esc(currentPuzzle.sm)}</p>
+    </div>
+    <div class="audio-bar">
+      <button onclick='speakTaiwan(${JSON.stringify(currentPuzzle.h)})'>Kata</button>
+      <button onclick='speakTaiwan(${JSON.stringify(currentPuzzle.s)})'>Kalimat</button>
+      <button class="green" onclick='playPractice(${JSON.stringify(currentPuzzle)})'>Latihan</button>
+    </div>
+  `;
+
+  const total=currentGridSize*currentGridSize;
+  pieces=Array.from({length:total},(_,i)=>i);
+  shufflePieces(pieces);
+
+  selectedIndex=null;
+  dragIndex=null;
+  puzzleFinished=false;
+  pointAlreadyGiven=false;
+  moveCount=0;
+
+  document.getElementById("moveCount").textContent="0";
+  successBox.classList.add("hidden");
+  successContent.innerHTML="";
+
+  startTimer();
+  renderPuzzlePieces();
+  saveHiddenLearningLog("mulai");
+}
+
+function shufflePieces(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+
+  if(arr.every((v,i)=>v===i))shufflePieces(arr);
+}
+
+function renderPuzzlePieces(){
+  puzzleBoard.innerHTML="";
+  if(!currentPuzzle)return;
+
+  puzzleBoard.style.gridTemplateColumns=`repeat(${currentGridSize},1fr)`;
+
+  const boardSize=puzzleBoard.clientWidth;
+  const pieceSize=boardSize/currentGridSize;
+
+  pieces.forEach((pieceNumber,index)=>{
+    const piece=document.createElement("div");
+    piece.className="piece";
+    piece.draggable=true;
+
+    const row=Math.floor(pieceNumber/currentGridSize);
+    const col=pieceNumber%currentGridSize;
+
+    piece.style.backgroundImage=`url("${currentPuzzle.image}")`;
+    piece.style.backgroundSize=`${boardSize}px ${boardSize}px`;
+    piece.style.backgroundPosition=`-${col*pieceSize}px -${row*pieceSize}px`;
+
+    piece.onclick=()=>selectOrSwap(index);
+    piece.ondragstart=()=>dragIndex=index;
+    piece.ondragover=e=>e.preventDefault();
+
+    piece.ondrop=e=>{
+      e.preventDefault();
+
+      if(dragIndex===null||puzzleFinished)return;
+
+      swapPieces(dragIndex,index);
+      dragIndex=null;
+      selectedIndex=null;
+      addMove();
+
+      renderPuzzlePieces();
+      checkPuzzleComplete();
+    };
+
+    if(selectedIndex===index)piece.classList.add("selected");
+
+    puzzleBoard.appendChild(piece);
+  });
+}
+
+function selectOrSwap(index){
+  if(puzzleFinished||pieces.length===0)return;
+
+  if(selectedIndex===null){
+    selectedIndex=index;
+    renderPuzzlePieces();
+    return;
+  }
+
+  if(selectedIndex===index){
+    selectedIndex=null;
+    renderPuzzlePieces();
+    return;
+  }
+
+  swapPieces(selectedIndex,index);
+  selectedIndex=null;
+  addMove();
+
+  renderPuzzlePieces();
+  checkPuzzleComplete();
+}
+
+function swapPieces(a,b){
+  [pieces[a],pieces[b]]=[pieces[b],pieces[a]];
+}
+
+function addMove(){
+  moveCount++;
+  document.getElementById("moveCount").textContent=moveCount;
+  saveHiddenLearningLog("belum_selesai");
+}
+
+function checkPuzzleComplete(){
+  if(pieces.every((v,i)=>v===i)){
+    puzzleFinished=true;
+    stopTimer();
+    setTimeout(showSuccess,400);
+  }
+}
+
+function updateLevelProgress(user,level,time,moves){
+  const progress=user.levelProgress[level];
+  const config=levelConfig[level];
+
+  progress.selesai += 1;
+  progress.totalTime += time;
+  progress.totalMove += moves;
+
+  if(progress.bestTime===null || time<progress.bestTime)progress.bestTime=time;
+  if(progress.bestMove===null || moves<progress.bestMove)progress.bestMove=moves;
+
+  user.points += 10;
+  user.badge=getBadge(user.points);
+
+  let completedNow=false;
+
+  if(progress.selesai>=config.targetPuzzle){
+    if(!user.completedLevels.includes(level)){
+      user.completedLevels.push(level);
+      completedNow=true;
+    }
+
+    if(config.next && !user.unlockedLevels.includes(config.next)){
+      user.unlockedLevels.push(config.next);
+    }
+  }
+
+  saveUsers();
+  return completedNow;
+}
+
+function showSuccess(){
+  const user=getCurrentUser();
+  if(!user)return;
+
+  initUserData(user);
+
+  let completedNow=false;
+
+  if(!pointAlreadyGiven){
+    completedNow=updateLevelProgress(user,currentLevel,seconds,moveCount);
+    pointAlreadyGiven=true;
+    saveHiddenLearningLog("selesai");
+  }
+
+  const progress=user.levelProgress[currentLevel];
+  const config=levelConfig[currentLevel];
+  const isLevelComplete=user.completedLevels.includes(currentLevel);
+
+  successContent.innerHTML=`
+    <img src="${currentPuzzle.image}">
+    <h2>${esc(currentPuzzle.h)}</h2>
+    <div class="meta">
+      <p><b>Nomor Kosakata:</b> ${currentPuzzle.no} / 200</p>
+      <p><b>Bahasa Mandarin / Hanzi:</b><br>${esc(currentPuzzle.h)}</p>
+      <p><b>Pinyin:</b><br>${esc(currentPuzzle.p)}</p>
+      <p><b>Arti Bahasa Indonesia:</b><br>${esc(currentPuzzle.m)}</p>
+    </div>
+    <div class="meta">
+      <p><b>Kalimat Mandarin:</b><br>${esc(currentPuzzle.s)}</p>
+      <p><b>Pinyin Kalimat:</b><br>${esc(currentPuzzle.sp)}</p>
+      <p><b>Arti Kalimat:</b><br>${esc(currentPuzzle.sm)}</p>
+    </div>
+    <div class="meta">
+      <p><b>Level:</b> ${getLevelName(currentLevel)}</p>
+      <p><b>Progress level:</b> ${Math.min(progress.selesai,config.targetPuzzle)} / ${config.targetPuzzle}</p>
+      <p><b>Langkah:</b> ${moveCount}</p>
+      <p><b>Waktu:</b> ${seconds} detik</p>
+    </div>
+    <p class="point">+10 Poin</p>
+    <p><b>Total Poin:</b> ${user.points}</p>
+    ${completedNow ? `<p class="point">Level ${getLevelName(currentLevel)} selesai! Level berikutnya terbuka.</p>` : ``}
+    ${isLevelComplete ? `<p>Silakan pilih level berikutnya atau ulangi level yang sudah selesai.</p>` : `<p>Puzzle berikutnya pada level ini akan muncul otomatis...</p>`}
+  `;
+
+  successBox.classList.remove("hidden");
+  launchConfetti();
+  playPractice(currentPuzzle);
+
+  renderLevelSelector();
+  updatePuzzleStats();
+
+  if(isLevelComplete){
+    document.getElementById("autoStatus").textContent="Level selesai. Pilih level berikutnya atau ulangi level ini.";
+  }else{
+    document.getElementById("autoStatus").textContent="Berhasil! Puzzle berikutnya akan muncul otomatis.";
+    autoNextTimer=setTimeout(()=>{
+      if(document.getElementById("page-puzzle").classList.contains("active")){
+        startPuzzle(currentLevel);
+      }
+    },5000);
+  }
+}
+
+function resetPuzzleVisualOnly(){
+  pieces=[];
+  selectedIndex=null;
+  dragIndex=null;
+  puzzleFinished=false;
+  pointAlreadyGiven=false;
+  moveCount=0;
+  seconds=0;
+  currentPuzzle=null;
+  currentAttemptId=null;
+
+  document.getElementById("moveCount").textContent="0";
+  document.getElementById("timerText").textContent="00:00";
+  puzzleBoard.innerHTML="";
+  successBox.classList.add("hidden");
+}
+
+function launchConfetti(){
+  const confettiColors=["#f87171","#facc15","#4ade80","#60a5fa","#c084fc","#fb923c"];
+
+  for(let i=0;i<70;i++){
+    const c=document.createElement("div");
+    c.className="confetti";
+    c.style.left=Math.random()*100+"vw";
+    c.style.background=confettiColors[Math.floor(Math.random()*confettiColors.length)];
+    c.style.borderRadius=Math.random()>.5?"50%":"3px";
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),3200);
+  }
+}
+
+function getTotalPuzzle(user){
+  initUserData(user);
+  let total=0;
+  levelOrder.forEach(level=>{total+=user.levelProgress[level].selesai;});
+  return total;
+}
+
+function renderProgress(){
+  const user=getCurrentUser();
+  if(!user)return;
+  initUserData(user);
+
+  document.getElementById("profileUsername").textContent=user.username;
+  document.getElementById("profileLevel").textContent=getLevelName(user.activeLevel);
+  document.getElementById("profileUnlocked").textContent=user.unlockedLevels.map(getLevelName).join(", ");
+  document.getElementById("profileCompleted").textContent=user.completedLevels.length ? user.completedLevels.map(getLevelName).join(", ") : "Belum ada";
+  document.getElementById("profilePoints").textContent=user.points;
+  document.getElementById("profileTotalPuzzle").textContent=getTotalPuzzle(user);
+  document.getElementById("profileBadge").textContent=user.badge;
+
+  const box=document.getElementById("profileLevelProgress");
+  box.innerHTML="";
+
+  levelOrder.forEach(level=>{
+    const config=levelConfig[level];
+    const p=user.levelProgress[level];
+    const percent=Math.min(100,Math.round((p.selesai/config.targetPuzzle)*100));
+
+    const div=document.createElement("div");
+    div.className="meta";
+    div.innerHTML=`
+      <p><b>${config.nama}</b></p>
+      <p>Progress: ${Math.min(p.selesai,config.targetPuzzle)} / ${config.targetPuzzle} puzzle</p>
+      <p>Best Time: ${p.bestTime===null?"-":p.bestTime+" detik"}</p>
+      <p>Best Move: ${p.bestMove===null?"-":p.bestMove+" langkah"}</p>
+      <div class="progress-wrap"><div class="progress-bar" style="width:${percent}%"></div></div>
+    `;
+    box.appendChild(div);
+  });
+}
+
+window.addEventListener("beforeunload",()=>{
+  if(currentPuzzle && !puzzleFinished)saveHiddenLearningLog("belum_selesai");
+});
+
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="hidden" && currentPuzzle && !puzzleFinished)saveHiddenLearningLog("belum_selesai");
+});
+
+window.addEventListener("resize",()=>{
+  if(pieces.length>0&&!puzzleFinished)renderPuzzlePieces();
+});
+
+window.addEventListener("load",()=>{
+  loadVoices();
+  if(getCurrentUser())showPage("home");
+  else showPage("login");
+});
+</script>
+
+</body>
+</html>
