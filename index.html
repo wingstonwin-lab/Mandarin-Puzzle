@@ -107,6 +107,8 @@ h2,h3{color:#b91c1c}
     <div id="registerError" class="error"></div>
     <div id="registerSuccess" class="success"></div>
     <form id="registerForm">
+      <input id="registerFullName" placeholder="Nama responden" required>
+      <input id="registerEmail" type="email" placeholder="Email responden" required>
       <input id="registerUsername" placeholder="Buat username" required>
       <input id="registerPassword" type="password" placeholder="Buat password" required>
       <button>Daftar</button>
@@ -213,6 +215,9 @@ h2,h3{color:#b91c1c}
 </section>
 
 <script>
+// ISI setelah Google Apps Script Web App selesai dibuat.
+// Contoh: const ONLINE_DATA_URL = "https://script.google.com/macros/s/AKfycbxs6qbAw13wERJ5I43T3dZfPk2dDCn7Qmg7y8R0aDAvQZvecri3-X9tSVDhcsRA2Fni/exec";
+// Jika masih kosong, progress tetap tersimpan di browser responden dan tidak dikirim ke Google Sheets.
 const ONLINE_DATA_URL = "";
 
 const STORAGE_USERS = "mandarin_puzzle_4level_final_users_v3";
@@ -567,6 +572,8 @@ function makeId(){
 }
 
 function initUserData(user){
+  if(!("nama" in user))user.nama="";
+  if(!("email" in user))user.email="";
   if(!user.points)user.points=0;
   if(!user.activeLevel)user.activeLevel="pemula";
   if(!user.unlockedLevels)user.unlockedLevels=["pemula"];
@@ -606,13 +613,22 @@ function getBadge(points){
 }
 
 function sendOnlineData(payload){
-  if(!ONLINE_DATA_URL)return;
+  if(!ONLINE_DATA_URL || ONLINE_DATA_URL.trim()==="" || ONLINE_DATA_URL.includes("AKfycbxxxx"))return;
+
+  const data={
+    app:"Mandarin Puzzle Edukasi",
+    ...payload,
+    pageURL:location.href,
+    userAgent:navigator.userAgent,
+    sentAt:new Date().toISOString()
+  };
+
   try{
     fetch(ONLINE_DATA_URL,{
       method:"POST",
       mode:"no-cors",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify({app:"Mandarin Puzzle Edukasi",...payload})
+      body:JSON.stringify(data)
     });
   }catch(e){}
 }
@@ -626,7 +642,10 @@ function saveHiddenLearningLog(status){
 
   const logItem={
     attemptId:currentAttemptId,
+    event:"puzzle_"+status,
     username:user.username,
+    nama:user.nama || "",
+    email:user.email || "",
     status:status,
     levelKey:currentLevel,
     level:getLevelName(currentLevel),
@@ -639,6 +658,9 @@ function saveHiddenLearningLog(status){
     langkah:moveCount,
     progressLevel:user.levelProgress[currentLevel].selesai,
     targetLevel:levelConfig[currentLevel].targetPuzzle,
+    totalPuzzle:getTotalPuzzle(user),
+    points:user.points,
+    badge:user.badge,
     waktuSimpan:new Date().toLocaleString("id-ID")
   };
 
@@ -675,9 +697,13 @@ document.getElementById("registerForm").addEventListener("submit",function(e){
   hide("registerError");
   hide("registerSuccess");
 
+  const nama=document.getElementById("registerFullName").value.trim();
+  const email=document.getElementById("registerEmail").value.trim();
   const username=document.getElementById("registerUsername").value.trim();
   const password=document.getElementById("registerPassword").value.trim();
 
+  if(nama.length<2){msg("registerError","Nama responden wajib diisi.");return;}
+  if(!email.includes("@")){msg("registerError","Email responden tidak valid.");return;}
   if(username.length<3){msg("registerError","Username minimal 3 karakter.");return;}
   if(password.length<3){msg("registerError","Password minimal 3 karakter.");return;}
 
@@ -686,12 +712,12 @@ document.getElementById("registerForm").addEventListener("submit",function(e){
     return;
   }
 
-  const user={username,password,points:0,activeLevel:"pemula",unlockedLevels:["pemula"],completedLevels:[],levelProgress:{},learningLog:[],badge:"Pemula"};
+  const user={nama,email,username,password,points:0,activeLevel:"pemula",unlockedLevels:["pemula"],completedLevels:[],levelProgress:{},learningLog:[],badge:"Pemula"};
   users.push(user);
   initUserData(user);
   saveUsers();
 
-  sendOnlineData({event:"register",username,waktuSimpan:new Date().toLocaleString("id-ID")});
+  sendOnlineData({event:"register",username,nama,email,waktuSimpan:new Date().toLocaleString("id-ID")});
 
   document.getElementById("registerForm").reset();
   msg("registerSuccess","Register berhasil. Silakan login.");
@@ -713,7 +739,7 @@ document.getElementById("loginForm").addEventListener("submit",function(e){
   saveUsers();
 
   setCurrentUser(user.username);
-  sendOnlineData({event:"login",username:user.username,waktuSimpan:new Date().toLocaleString("id-ID")});
+  sendOnlineData({event:"login",username:user.username,nama:user.nama||"",email:user.email||"",points:user.points,totalPuzzle:getTotalPuzzle(user),waktuSimpan:new Date().toLocaleString("id-ID")});
 
   document.getElementById("loginForm").reset();
   showPage("home");
@@ -733,7 +759,7 @@ function renderHome(){
   if(!user)return;
   initUserData(user);
   document.getElementById("homeUsername").innerHTML =
-  `Username: <b>${esc(user.username)}</b> | Level terbuka: <b>${getLevelName(getHighestUnlockedLevel(user))}</b> | Poin: <b>${user.points}</b>`;
+  `Nama: <b>${esc(user.nama||user.username)}</b> | Username: <b>${esc(user.username)}</b> | Level terbuka: <b>${getLevelName(getHighestUnlockedLevel(user))}</b> | Poin: <b>${user.points}</b>`;
 }
 
 function loadVoices(){
