@@ -723,7 +723,9 @@ function sendOnlineData(payload){
 
     form.submit();
 
-    setTimeout(function(){
+alert("DATA DIKIRIM KE SHEET: " + data.event);
+
+setTimeout(function(){
       if(form.parentNode){
         form.parentNode.removeChild(form);
       }
@@ -1706,7 +1708,7 @@ function renderIdToZhPractice(){
   const content=document.getElementById("practiceContent");
   const pool=getPracticePool(practiceLevel);
   const distractors=shuffleArray(pool.filter(x=>x.id!==practiceCurrentItem.id && x.h!==practiceCurrentItem.h)).slice(0,3);
-  const options=shuffleArray([practiceCurrentItem,...distractors]);
+const options=shuffleArray([practiceCurrentItem,...distractors]);
 
   content.innerHTML=`
     <div class="practice-question">
