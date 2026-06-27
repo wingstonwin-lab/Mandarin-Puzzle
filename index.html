@@ -65,10 +65,25 @@ h2,h3{color:#b91c1c}
 .small{font-size:14px;color:#6b7280}
 .confetti{position:fixed;top:-20px;width:12px;height:12px;z-index:999;animation:fall 3s linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+.practice-mode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.practice-area{background:white;border-radius:22px;padding:22px;margin:18px auto;box-shadow:0 10px 25px rgba(0,0,0,.12)}
+.practice-mini-stat{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0}
+.practice-question{max-width:760px;margin:18px auto;text-align:center}
+.practice-prompt{font-size:22px;background:#fff7ed;border:2px solid #fed7aa;border-radius:18px;padding:18px;margin:14px 0}
+.practice-option-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:760px;margin:18px auto}
+.practice-option{background:#2563eb;color:white;border-radius:16px;min-height:78px}
+.practice-option.correct{background:#15803d}
+.practice-option.wrong{background:#dc2626}
+.word-bank,.answer-bank{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;min-height:78px;background:#f9fafb;border:2px dashed #d1d5db;border-radius:18px;padding:14px;margin:14px auto;max-width:760px}
+.word-tile{width:auto;min-width:58px;background:#b91c1c;color:white;border-radius:14px;padding:14px 18px;font-size:28px;font-weight:bold;margin:4px;cursor:pointer;box-shadow:0 6px 12px rgba(0,0,0,.15)}
+.word-tile:hover{background:#991b1b;transform:translateY(-2px)}
+.practice-result{max-width:760px;margin:18px auto;background:#fff7ed;border-radius:18px;padding:18px;border:1px solid #fed7aa}
+
 @media(max-width:900px){
   .game-layout,.menu-grid,.level-selector{grid-template-columns:1fr}
   .vocab-grid{grid-template-columns:1fr}
-  .audio-bar{grid-template-columns:1fr}
+  .audio-bar,.practice-mode-grid,.practice-option-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -78,11 +93,12 @@ h2,h3{color:#b91c1c}
 <nav id="navbar">
   <div class="brand">Mandarin Puzzle Edukasi</div>
   <div>
-    <button onclick="showPage('home')">Home</button>
-    <button onclick="showPage('belajar')">Kosakata</button>
-    <button onclick="showPage('puzzle')">Puzzle</button>
-    <button onclick="showPage('progress')">Progress</button>
-    <button onclick="logout()">Logout</button>
+    <button type="button" onclick="showPage('home')">Home</button>
+    <button type="button" onclick="showPage('belajar')">Kosakata</button>
+    <button type="button" onclick="showPage('puzzle')">Puzzle</button>
+    <button type="button" onclick="showPage('latihan')">Latihan</button>
+    <button type="button" onclick="showPage('progress')">Progress</button>
+    <button type="button" onclick="logout()">Logout</button>
   </div>
 </nav>
 
@@ -124,6 +140,7 @@ h2,h3{color:#b91c1c}
     <div class="menu-grid">
       <div class="menu-card" onclick="showPage('belajar')">📚 Kosakata</div>
       <div class="menu-card" onclick="showPage('puzzle')">🧩 Puzzle Bertahap</div>
+      <div class="menu-card" role="button" tabindex="0" onclick="showPage('latihan')" onkeydown="if(event.key==='Enter'||event.key===' '){showPage('latihan')}">🎯 Latihan Tebak Kosakata</div>
       <div class="menu-card" onclick="showPage('progress')">📈 Progress Belajar</div>
     </div>
   </div>
@@ -194,6 +211,41 @@ h2,h3{color:#b91c1c}
   </div>
 </section>
 
+
+<section id="page-latihan" class="page">
+  <div class="container">
+    <h1>Latihan Tebak Kosakata</h1>
+    <p>Latihan ini tidak memakai gambar dan tidak memakai menyusun kata. Siswa hanya berlatih menebak kosakata dalam dua arah.</p>
+
+    <div class="panel">
+      <h3>Pilih Level Latihan</h3>
+      <p class="small">Level latihan mengikuti level yang sudah terbuka.</p>
+      <div id="practiceLevelSelector" class="level-selector"></div>
+    </div>
+
+    <div class="panel">
+      <h3>Pilih Jenis Latihan</h3>
+      <div class="practice-mode-grid">
+        <button type="button" class="blue" onclick="startPractice('idToZh')">🇮🇩 Indonesia → Mandarin</button>
+        <button type="button" class="green" onclick="startPractice('zhToId')">🇨🇳 Mandarin → Indonesia</button>
+      </div>
+    </div>
+
+    <div class="practice-mini-stat">
+      <div class="stat-box">Level: <span id="practiceLevelText">-</span></div>
+      <div class="stat-box">Mode: <span id="practiceModeText">-</span></div>
+      <div class="stat-box">Soal: <span id="practiceQuestionText">-</span></div>
+      <div class="stat-box">Benar: <span id="practiceCorrectText">0</span></div>
+      <div class="stat-box">Salah: <span id="practiceWrongText">0</span></div>
+      <div class="stat-box">Poin Latihan: <span id="practicePointText">0</span></div>
+    </div>
+
+    <div id="practiceContent" class="practice-area">
+      Pilih level dan jenis latihan untuk mulai.
+    </div>
+  </div>
+</section>
+
 <section id="page-progress" class="page">
   <div class="container">
     <h1>Progress Belajar</h1>
@@ -210,6 +262,9 @@ h2,h3{color:#b91c1c}
 
       <h3>Progress Per Level</h3>
       <div id="profileLevelProgress"></div>
+
+      <h3>Progress Latihan</h3>
+      <div id="profilePracticeProgress"></div>
     </div>
   </div>
 </section>
@@ -238,6 +293,16 @@ let seconds = 0;
 let currentGridSize = 3;
 let autoNextTimer = null;
 let availableVoices = [];
+
+let practiceLevel = "pemula";
+let practiceMode = null;
+let practiceCurrentItem = null;
+let practiceQuestionNumber = 0;
+let practiceSessionCorrect = 0;
+let practiceSessionWrong = 0;
+let arrangeBank = [];
+let arrangeAnswer = [];
+let practiceAutoNextTimer = null;
 
 const navbar = document.getElementById("navbar");
 const puzzleBoard = document.getElementById("puzzleBoard");
@@ -580,11 +645,20 @@ function initUserData(user){
   if(!user.levelProgress)user.levelProgress={};
   if(!user.learningLog)user.learningLog=[];
   if(!user.badge)user.badge="Pemula";
+  if(!user.practiceProgress)user.practiceProgress={};
 
   levelOrder.forEach(level=>{
     if(!user.levelProgress[level]){
       user.levelProgress[level]={selesai:0,bestTime:null,bestMove:null,totalTime:0,totalMove:0};
     }
+    if(!user.practiceProgress[level]){
+      user.practiceProgress[level]={idToZhDone:0,zhToIdDone:0,correct:0,wrong:0,totalPracticePoints:0};
+    }
+    if(user.practiceProgress[level].idToZhDone===undefined)user.practiceProgress[level].idToZhDone=user.practiceProgress[level].guessDone || 0;
+    if(user.practiceProgress[level].zhToIdDone===undefined)user.practiceProgress[level].zhToIdDone=0;
+    if(user.practiceProgress[level].correct===undefined)user.practiceProgress[level].correct=0;
+    if(user.practiceProgress[level].wrong===undefined)user.practiceProgress[level].wrong=0;
+    if(user.practiceProgress[level].totalPracticePoints===undefined)user.practiceProgress[level].totalPracticePoints=0;
   });
 
   saveUsers();
@@ -674,8 +748,14 @@ function showPage(pageName){
   const needLogin=!["login","register"].includes(pageName);
   if(needLogin&&!getCurrentUser())pageName="login";
 
+  const targetPage=document.getElementById("page-"+pageName);
+  if(!targetPage){
+    alert("Halaman "+pageName+" belum tersedia.");
+    return;
+  }
+
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  document.getElementById("page-"+pageName).classList.add("active");
+  targetPage.classList.add("active");
 
   navbar.style.display=getCurrentUser()?"flex":"none";
 
@@ -685,9 +765,14 @@ function showPage(pageName){
     stopAutoNext();
   }
 
+  if(pageName!=="latihan"){
+    stopPracticeAutoNext();
+  }
+
   if(pageName==="home")renderHome();
   if(pageName==="belajar")renderVocab();
   if(pageName==="puzzle")renderPuzzlePage();
+  if(pageName==="latihan")renderLatihanPage();
   if(pageName==="progress")renderProgress();
 }
 
@@ -770,29 +855,89 @@ if("speechSynthesis" in window){
   speechSynthesis.onvoiceschanged=loadVoices;
 }
 
-function getTaiwanVoice(){
+function getMandarinVoice(){
   if(!availableVoices.length)loadVoices();
 
-  let v=availableVoices.find(x=>x.lang==="zh-TW" || x.name.toLowerCase().includes("taiwan") || x.name.toLowerCase().includes("ting-ting"));
-  if(!v)v=availableVoices.find(x=>x.lang&&x.lang.toLowerCase().startsWith("zh"));
+  const preferredNames=[
+    "xiaoxiao","xiaoyi","yunxi","yunyang","huihui","kangkang",
+    "mei-jia","meijia","ting-ting","tingting","sin-ji","sinji",
+    "google 普通话","google mandarin","mandarin","putonghua",
+    "chinese","china","taiwan"
+  ];
+
+  let v=availableVoices.find(x=>{
+    const name=(x.name||"").toLowerCase();
+    const lang=(x.lang||"").toLowerCase();
+    return (lang==="zh-cn" || lang==="zh-tw" || lang==="zh-hans" || lang==="zh-hant") &&
+      preferredNames.some(key=>name.includes(key));
+  });
+
+  if(!v)v=availableVoices.find(x=>{
+    const lang=(x.lang||"").toLowerCase();
+    return lang==="zh-cn" || lang==="zh-tw" || lang.startsWith("zh");
+  });
 
   return v||null;
+}
+
+function getTaiwanVoice(){
+  return getMandarinVoice();
+}
+
+function getIndonesianVoice(){
+  if(!availableVoices.length)loadVoices();
+
+  let v=availableVoices.find(x=>{
+    const lang=(x.lang||"").toLowerCase();
+    const name=(x.name||"").toLowerCase();
+    return lang==="id-id" || name.includes("indonesia") || name.includes("indonesian");
+  });
+
+  if(!v)v=availableVoices.find(x=>(x.lang||"").toLowerCase().startsWith("id"));
+
+  return v||null;
+}
+
+function speakTextWithVoice(text,lang,voice,rate,pitch,onDone){
+  if(!("speechSynthesis" in window)){
+    if(onDone)setTimeout(onDone,1000);
+    return;
+  }
+
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang=lang;
+  u.rate=rate;
+  u.pitch=pitch;
+
+  if(voice)u.voice=voice;
+
+  u.onend=function(){
+    if(onDone)setTimeout(onDone,450);
+  };
+  u.onerror=function(){
+    if(onDone)setTimeout(onDone,900);
+  };
+
+  speechSynthesis.speak(u);
 }
 
 function speakTaiwan(text){
   if(!("speechSynthesis" in window))return;
   speechSynthesis.cancel();
 
-  const u=new SpeechSynthesisUtterance(text);
-  u.lang="zh-TW";
-  u.rate=.82;
-  u.pitch=1;
-
-  const v=getTaiwanVoice();
-  if(v)u.voice=v;
-
-  speechSynthesis.speak(u);
+  speakTextWithVoice(text,"zh-CN",getMandarinVoice(),.78,1,null);
 }
+
+function speakTaiwanThen(text,callback){
+  if(!("speechSynthesis" in window)){
+    if(callback)setTimeout(callback,1200);
+    return;
+  }
+
+  speechSynthesis.cancel();
+  speakTextWithVoice(text,"zh-CN",getMandarinVoice(),.78,1,callback);
+}
+
 
 function playPractice(item){
   if(!("speechSynthesis" in window))return;
@@ -1356,6 +1501,348 @@ function getTotalPuzzle(user){
   return total;
 }
 
+
+
+
+function stopPracticeAutoNext(){
+  if(practiceAutoNextTimer){
+    clearTimeout(practiceAutoNextTimer);
+    practiceAutoNextTimer=null;
+  }
+}
+
+function shuffleArray(arr){
+  const copy=[...arr];
+  for(let i=copy.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [copy[i],copy[j]]=[copy[j],copy[i]];
+  }
+  return copy;
+}
+
+function getPracticePool(level){
+  return getVocabularyByLevel(level);
+}
+
+function getPracticeItem(level,mode){
+  const user=getCurrentUser();
+  const pool=getPracticePool(level);
+  if(!user || pool.length===0)return null;
+  initUserData(user);
+
+  const p=user.practiceProgress[level];
+  const index=(mode==="zhToId" ? p.zhToIdDone : p.idToZhDone) % pool.length;
+  return pool[index];
+}
+
+function renderLatihanPage(){
+  const user=getCurrentUser();
+  if(!user)return;
+  initUserData(user);
+
+  practiceLevel=user.activeLevel || getHighestUnlockedLevel(user) || "pemula";
+  if(!user.unlockedLevels.includes(practiceLevel))practiceLevel=getHighestUnlockedLevel(user);
+
+  practiceMode=null;
+  practiceCurrentItem=null;
+  practiceQuestionNumber=0;
+  practiceSessionCorrect=0;
+  practiceSessionWrong=0;
+
+  renderPracticeLevelSelector();
+  renderPracticeStats();
+  resetPracticeContent();
+}
+
+function renderPracticeLevelSelector(){
+  const user=getCurrentUser();
+  if(!user)return;
+  initUserData(user);
+
+  const box=document.getElementById("practiceLevelSelector");
+  if(!box)return;
+  box.innerHTML="";
+
+  levelOrder.forEach(level=>{
+    const unlocked=user.unlockedLevels.includes(level);
+    const p=user.practiceProgress[level];
+    const btn=document.createElement("button");
+    btn.type="button";
+
+    if(!unlocked){
+      btn.className="gray";
+      btn.disabled=true;
+      btn.textContent=getLevelName(level)+" 🔒 Terkunci";
+    }else{
+      btn.className=practiceLevel===level?"green":"blue";
+      btn.innerHTML=`${getLevelName(level)}<br><span class="small">Indo→Mandarin: ${p.idToZhDone} | Mandarin→Indo: ${p.zhToIdDone}</span>`;
+      btn.onclick=function(){selectPracticeLevel(level)};
+    }
+
+    box.appendChild(btn);
+  });
+}
+
+function selectPracticeLevel(level){
+  const user=getCurrentUser();
+  if(!user)return;
+  initUserData(user);
+
+  if(!user.unlockedLevels.includes(level)){
+    alert("Level latihan ini masih terkunci.");
+    return;
+  }
+
+  practiceLevel=level;
+  user.activeLevel=level;
+  saveUsers();
+
+  practiceMode=null;
+  practiceCurrentItem=null;
+  practiceQuestionNumber=0;
+  practiceSessionCorrect=0;
+  practiceSessionWrong=0;
+
+  renderPracticeLevelSelector();
+  renderPracticeStats();
+  resetPracticeContent();
+}
+
+function resetPracticeContent(){
+  const content=document.getElementById("practiceContent");
+  if(!content)return;
+
+  content.innerHTML=`
+    <h2>Siap Berlatih</h2>
+    <p>Pilih salah satu mode:</p>
+    <div class="meta" style="max-width:720px;margin:auto;text-align:left">
+      <p><b>Indonesia → Mandarin:</b> sistem menampilkan arti bahasa Indonesia, siswa memilih Hanzi Mandarin yang benar.</p>
+      <p><b>Mandarin → Indonesia:</b> sistem menampilkan Hanzi/Pinyin, siswa memilih arti bahasa Indonesia yang benar.</p>
+    </div>
+    <p class="small">Materi otomatis memakai kosakata level <b>${getLevelName(practiceLevel)}</b>.</p>
+  `;
+}
+
+function renderPracticeStats(){
+  const user=getCurrentUser();
+  if(!user)return;
+  initUserData(user);
+
+  const p=user.practiceProgress[practiceLevel];
+  const modeText=practiceMode==="idToZh" ? "Indonesia → Mandarin" : practiceMode==="zhToId" ? "Mandarin → Indonesia" : "-";
+
+  const levelEl=document.getElementById("practiceLevelText");
+  if(!levelEl)return;
+
+  levelEl.textContent=getLevelName(practiceLevel);
+  document.getElementById("practiceModeText").textContent=modeText;
+  document.getElementById("practiceQuestionText").textContent=practiceQuestionNumber ? String(practiceQuestionNumber) : "-";
+  document.getElementById("practiceCorrectText").textContent=practiceSessionCorrect+" / total "+p.correct;
+  document.getElementById("practiceWrongText").textContent=practiceSessionWrong+" / total "+p.wrong;
+  document.getElementById("practicePointText").textContent=p.totalPracticePoints;
+}
+
+function startPractice(mode){
+  stopPracticeAutoNext();
+  const user=getCurrentUser();
+  if(!user)return;
+  initUserData(user);
+
+  if(!user.unlockedLevels.includes(practiceLevel)){
+    alert("Level latihan ini masih terkunci.");
+    return;
+  }
+
+  practiceMode=mode;
+  practiceQuestionNumber++;
+  practiceCurrentItem=getPracticeItem(practiceLevel,mode);
+
+  if(!practiceCurrentItem){
+    alert("Kosakata level ini belum tersedia.");
+    return;
+  }
+
+  renderPracticeStats();
+
+  if(mode==="idToZh")renderIdToZhPractice();
+  if(mode==="zhToId")renderZhToIdPractice();
+}
+
+function renderIdToZhPractice(){
+  const content=document.getElementById("practiceContent");
+  const pool=getPracticePool(practiceLevel);
+  const distractors=shuffleArray(pool.filter(x=>x.id!==practiceCurrentItem.id && x.h!==practiceCurrentItem.h)).slice(0,3);
+  const options=shuffleArray([practiceCurrentItem,...distractors]);
+
+  content.innerHTML=`
+    <div class="practice-question">
+      <h2>Indonesia → Mandarin</h2>
+      <div class="practice-prompt">
+        <p><b>Pilih kosakata Mandarin yang sesuai dengan arti berikut:</b></p>
+        <p style="font-size:30px;font-weight:bold;color:#991b1b">${esc(practiceCurrentItem.m)}</p>
+      </div>
+      <div id="practiceGuessOptions" class="practice-option-grid"></div>
+      <div id="practiceResult"></div>
+    </div>
+  `;
+
+  const box=document.getElementById("practiceGuessOptions");
+  options.forEach(opt=>{
+    const btn=document.createElement("button");
+    btn.type="button";
+    btn.className="practice-option";
+    btn.dataset.answerId=opt.id;
+    btn.innerHTML=`<b style="font-size:30px">${esc(opt.h)}</b><br><span>${esc(opt.p)}</span>`;
+    btn.onclick=function(){answerPractice(opt.id,btn)};
+    box.appendChild(btn);
+  });
+
+  savePracticeLog("mulai","indonesia_ke_mandarin",false,0);
+}
+
+function renderZhToIdPractice(){
+  const content=document.getElementById("practiceContent");
+  const pool=getPracticePool(practiceLevel);
+  const distractors=shuffleArray(pool.filter(x=>x.id!==practiceCurrentItem.id && x.m!==practiceCurrentItem.m)).slice(0,3);
+  const options=shuffleArray([practiceCurrentItem,...distractors]);
+
+  content.innerHTML=`
+    <div class="practice-question">
+      <h2>Mandarin → Indonesia</h2>
+      <div class="practice-prompt">
+        <p><b>Pilih arti bahasa Indonesia dari kosakata berikut:</b></p>
+        <p style="font-size:42px;font-weight:bold;color:#991b1b">${esc(practiceCurrentItem.h)}</p>
+        <p style="font-size:22px;color:#7f1d1d">${esc(practiceCurrentItem.p)}</p>
+      </div>
+      <div id="practiceGuessOptions" class="practice-option-grid"></div>
+      <div id="practiceResult"></div>
+    </div>
+  `;
+
+  const box=document.getElementById("practiceGuessOptions");
+  options.forEach(opt=>{
+    const btn=document.createElement("button");
+    btn.type="button";
+    btn.className="practice-option";
+    btn.dataset.answerId=opt.id;
+    btn.innerHTML=`<b style="font-size:22px">${esc(opt.m)}</b>`;
+    btn.onclick=function(){answerPractice(opt.id,btn)};
+    box.appendChild(btn);
+  });
+
+  savePracticeLog("mulai","mandarin_ke_indonesia",false,0);
+}
+
+function answerPractice(answerId,buttonEl){
+  const user=getCurrentUser();
+  if(!user || !practiceCurrentItem)return;
+  initUserData(user);
+
+  const isCorrect=answerId===practiceCurrentItem.id;
+  const p=user.practiceProgress[practiceLevel];
+
+  if(practiceMode==="zhToId")p.zhToIdDone += 1;
+  else p.idToZhDone += 1;
+
+  let point=0;
+  if(isCorrect){
+    p.correct += 1;
+    p.totalPracticePoints += 2;
+    user.points += 2;
+    user.badge=getBadge(user.points);
+    practiceSessionCorrect++;
+    point=2;
+  }else{
+    p.wrong += 1;
+    practiceSessionWrong++;
+  }
+
+  saveUsers();
+  renderPracticeLevelSelector();
+  renderPracticeStats();
+
+  document.querySelectorAll("#practiceGuessOptions .practice-option").forEach(btn=>{
+    btn.disabled=true;
+    if(btn.dataset.answerId===practiceCurrentItem.id)btn.classList.add("correct");
+  });
+  if(!isCorrect && buttonEl)buttonEl.classList.add("wrong");
+
+  const logMode=practiceMode==="zhToId" ? "mandarin_ke_indonesia" : "indonesia_ke_mandarin";
+  savePracticeLog("selesai",logMode,isCorrect,point);
+
+  const nextMode=practiceMode;
+  const nextLabel=nextMode==="zhToId" ? "Lanjut Mandarin → Indonesia" : "Lanjut Indonesia → Mandarin";
+
+  const result=document.getElementById("practiceResult");
+  const titleText=practiceMode==="idToZh"
+    ? (isCorrect ? "Benar. Pelafalan kosakata Mandarin:" : "Salah. Kosakata Mandarin yang benar:")
+    : (isCorrect ? "Benar. Kosakata ini:" : "Salah. Kosakata yang benar:");
+
+  result.innerHTML=`
+    <div class="practice-result">
+      <h2>${titleText}</h2>
+      <p><b>Hanzi:</b> <span style="font-size:30px;color:#991b1b;font-weight:bold">${esc(practiceCurrentItem.h)}</span></p>
+      <p><b>Pinyin:</b> ${esc(practiceCurrentItem.p)}</p>
+      <p><b>Arti:</b> ${esc(practiceCurrentItem.m)}</p>
+      <p><b>Kalimat:</b> ${esc(practiceCurrentItem.s)}</p>
+      <p><b>Arti Kalimat:</b> ${esc(practiceCurrentItem.sm)}</p>
+      <p><b>Poin:</b> +${point}</p>
+      <p class="small">Sistem melafalkan kosakata Mandarin yang benar. Soal berikutnya muncul otomatis.</p>
+      <div class="audio-bar">
+        <button type="button" onclick='speakTaiwan(${JSON.stringify(practiceCurrentItem.h)})'>Dengar Kata</button>
+        <button type="button" onclick='speakTaiwan(${JSON.stringify(practiceCurrentItem.s)})'>Dengar Kalimat</button>
+      </div>
+    </div>
+  `;
+
+  if(isCorrect)launchConfetti();
+
+  speakTaiwanThen(practiceCurrentItem.h,function(){
+    practiceAutoNextTimer=setTimeout(()=>{
+      if(document.getElementById("page-latihan") && document.getElementById("page-latihan").classList.contains("active")){
+        startPractice(nextMode);
+      }
+    },500);
+  });
+}
+
+function savePracticeLog(status,mode,isCorrect,point){
+  const user=getCurrentUser();
+  if(!user || !practiceCurrentItem)return;
+  initUserData(user);
+
+  const logItem={
+    attemptId:makeId(),
+    event:"practice_"+mode+"_"+status,
+    username:user.username,
+    nama:user.nama || "",
+    email:user.email || "",
+    status:status,
+    mode:mode,
+    benar:isCorrect,
+    pointLatihan:point,
+    levelKey:practiceLevel,
+    level:getLevelName(practiceLevel),
+    nomorKosakata:practiceCurrentItem.no,
+    hanzi:practiceCurrentItem.h,
+    pinyin:practiceCurrentItem.p,
+    arti:practiceCurrentItem.m,
+    kalimat:practiceCurrentItem.s,
+    progressIndonesiaKeMandarin:user.practiceProgress[practiceLevel].idToZhDone,
+    progressMandarinKeIndonesia:user.practiceProgress[practiceLevel].zhToIdDone,
+    totalBenarLatihan:user.practiceProgress[practiceLevel].correct,
+    totalSalahLatihan:user.practiceProgress[practiceLevel].wrong,
+    totalPracticePoints:user.practiceProgress[practiceLevel].totalPracticePoints,
+    points:user.points,
+    badge:user.badge,
+    waktuSimpan:new Date().toLocaleString("id-ID")
+  };
+
+  user.learningLog.push(logItem);
+  saveUsers();
+  sendOnlineData(logItem);
+}
+
 function renderProgress(){
   const user=getCurrentUser();
   if(!user)return;
@@ -1388,6 +1875,25 @@ function renderProgress(){
     `;
     box.appendChild(div);
   });
+
+  const practiceBox=document.getElementById("profilePracticeProgress");
+  if(practiceBox){
+    practiceBox.innerHTML="";
+    levelOrder.forEach(level=>{
+      const p=user.practiceProgress[level];
+      const div=document.createElement("div");
+      div.className="meta";
+      div.innerHTML=`
+        <p><b>${getLevelName(level)}</b></p>
+        <p>Indonesia → Mandarin selesai: ${p.idToZhDone}</p>
+        <p>Mandarin → Indonesia selesai: ${p.zhToIdDone}</p>
+        <p>Jawaban benar: ${p.correct}</p>
+        <p>Jawaban salah: ${p.wrong}</p>
+        <p>Poin latihan: ${p.totalPracticePoints}</p>
+      `;
+      practiceBox.appendChild(div);
+    });
+  }
 }
 
 window.addEventListener("beforeunload",()=>{
@@ -1401,6 +1907,20 @@ document.addEventListener("visibilitychange",()=>{
 window.addEventListener("resize",()=>{
   if(pieces.length>0&&!puzzleFinished)renderPuzzlePieces();
 });
+
+
+// Ekspor fungsi ke window agar tombol onclick aktif di berbagai browser/preview.
+window.showPage=showPage;
+window.logout=logout;
+window.speakTaiwan=speakTaiwan;
+window.speakTaiwanThen=speakTaiwanThen;
+window.playPractice=playPractice;
+window.renderVocab=renderVocab;
+window.startPuzzle=startPuzzle;
+window.selectLevel=selectLevel;
+window.startPractice=startPractice;
+window.selectPracticeLevel=selectPracticeLevel;
+window.answerPractice=answerPractice;
 
 window.addEventListener("load",()=>{
   loadVoices();
