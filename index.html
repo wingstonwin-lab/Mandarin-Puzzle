@@ -685,9 +685,10 @@ function getBadge(points){
   return"Pemula";
 }
 
-function sendOnlineData(payload){
+function sendOnlineData(payload, showAlert=false){
   if(!ONLINE_DATA_URL || ONLINE_DATA_URL.trim()==="" || ONLINE_DATA_URL.includes("AKfycbxxxx")){
-    alert("ONLINE_DATA_URL masih kosong atau salah.");
+    console.warn("ONLINE_DATA_URL masih kosong atau salah.");
+    if(showAlert) alert("ONLINE_DATA_URL masih kosong atau salah.");
     return;
   }
 
@@ -723,9 +724,9 @@ function sendOnlineData(payload){
 
     form.submit();
 
-alert("DATA DIKIRIM KE SHEET: " + data.event);
+    if(showAlert) alert("Data berhasil dikirim ke Google Sheet: " + data.event);
 
-setTimeout(function(){
+    setTimeout(function(){
       if(form.parentNode){
         form.parentNode.removeChild(form);
       }
@@ -738,11 +739,11 @@ setTimeout(function(){
 
   }catch(error){
     console.error("Gagal mengirim data:", error);
-    alert("Gagal mengirim data ke Google Sheet.");
+    if(showAlert) alert("Gagal mengirim data ke Google Sheet.");
   }
 }
 
-function saveHiddenLearningLog(status){
+function saveHiddenLearningLog(status, kirimKeSheet=false){
   const user=getCurrentUser();
   if(!user || !currentPuzzle || !currentAttemptId)return;
   initUserData(user);
@@ -777,7 +778,10 @@ function saveHiddenLearningLog(status){
   else user.learningLog.push(logItem);
 
   saveUsers();
-  sendOnlineData(logItem);
+
+  if(kirimKeSheet){
+    sendOnlineData(logItem);
+  }
 }
 
 function showPage(pageName){
@@ -796,7 +800,7 @@ function showPage(pageName){
   navbar.style.display=getCurrentUser()?"flex":"none";
 
   if(pageName!=="puzzle"){
-    if(currentPuzzle && !puzzleFinished)saveHiddenLearningLog("belum_selesai");
+    if(currentPuzzle && !puzzleFinished)saveHiddenLearningLog("belum_selesai", true);
     stopTimer();
     stopAutoNext();
   }
@@ -866,7 +870,7 @@ document.getElementById("loginForm").addEventListener("submit",function(e){
 });
 
 function logout(){
-  if(currentPuzzle && !puzzleFinished)saveHiddenLearningLog("belum_selesai");
+  if(currentPuzzle && !puzzleFinished)saveHiddenLearningLog("belum_selesai", true);
   localStorage.removeItem(STORAGE_CURRENT);
   stopTimer();
   stopAutoNext();
@@ -1154,7 +1158,7 @@ function selectLevel(level){
     return;
   }
 
-  if(currentPuzzle && !puzzleFinished)saveHiddenLearningLog("belum_selesai");
+  if(currentPuzzle && !puzzleFinished)saveHiddenLearningLog("belum_selesai", true);
 
   user.activeLevel=level;
   currentLevel=level;
@@ -1209,7 +1213,7 @@ function startTimer(){
     updateTimerText();
 
     if(seconds%10===0 && currentPuzzle && !puzzleFinished){
-      saveHiddenLearningLog("belum_selesai");
+      saveHiddenLearningLog("belum_selesai", false);
     }
   },1000);
 }
@@ -1307,7 +1311,7 @@ function startPuzzle(level){
 
   startTimer();
   renderPuzzlePieces();
-  saveHiddenLearningLog("mulai");
+  saveHiddenLearningLog("mulai", true);
 }
 
 function shufflePieces(arr){
@@ -1394,7 +1398,7 @@ function swapPieces(a,b){
 function addMove(){
   moveCount++;
   document.getElementById("moveCount").textContent=moveCount;
-  saveHiddenLearningLog("belum_selesai");
+  saveHiddenLearningLog("belum_selesai", false);
 }
 
 function checkPuzzleComplete(){
@@ -1447,7 +1451,7 @@ function showSuccess(){
   if(!pointAlreadyGiven){
     completedNow=updateLevelProgress(user,currentLevel,seconds,moveCount);
     pointAlreadyGiven=true;
-    saveHiddenLearningLog("selesai");
+    saveHiddenLearningLog("selesai", true);
   }
 
   const progress=user.levelProgress[currentLevel];
@@ -1933,11 +1937,11 @@ function renderProgress(){
 }
 
 window.addEventListener("beforeunload",()=>{
-  if(currentPuzzle && !puzzleFinished)saveHiddenLearningLog("belum_selesai");
+  if(currentPuzzle && !puzzleFinished)saveHiddenLearningLog("belum_selesai", true);
 });
 
 document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="hidden" && currentPuzzle && !puzzleFinished)saveHiddenLearningLog("belum_selesai");
+  if(document.visibilityState==="hidden" && currentPuzzle && !puzzleFinished)saveHiddenLearningLog("belum_selesai", false);
 });
 
 window.addEventListener("resize",()=>{
