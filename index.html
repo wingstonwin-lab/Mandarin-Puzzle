@@ -271,9 +271,9 @@ h2,h3{color:#b91c1c}
 
 <script>
 // ISI setelah Google Apps Script Web App selesai dibuat.
-// Contoh: const ONLINE_DATA_URL = "https://script.google.com/macros/s/AKfycbzhti6L9GBpPAGoA3HugaiTZOn9fOoTGH1m7tVkGJh6wE498TPJONRu8AA6Y6MlKNaSTw/exec";
+// Contoh:const ONLINE_DATA_URL = "https://script.google.com/macros/s/AKfycbybeouIEZIam3hw5m-WUa2uSiDOdeB8fZRDGrA7xjf1nr14wtBiDXHETqSS0On2yBhj7A/exec";
 // Jika masih kosong, progress tetap tersimpan di browser responden dan tidak dikirim ke Google Sheets.
-const ONLINE_DATA_URL = "https://script.google.com/macros/s/AKfycbzhti6L9GBpPAGoA3HugaiTZOn9fOoTGH1m7tVkGJh6wE498TPJONRu8AA6Y6MlKNaSTw/exec";
+const ONLINE_DATA_URL = "https://script.google.com/macros/s/AKfycbybeouIEZIam3hw5m-WUa2uSiDOdeB8fZRDGrA7xjf1nr14wtBiDXHETqSS0On2yBhj7A/exec";
 const STORAGE_USERS = "mandarin_puzzle_4level_final_users_v3";
 const STORAGE_CURRENT = "mandarin_puzzle_4level_final_current_v3";
 
@@ -686,7 +686,10 @@ function getBadge(points){
 }
 
 function sendOnlineData(payload){
-  if(!ONLINE_DATA_URL || ONLINE_DATA_URL.trim()==="" || ONLINE_DATA_URL.includes("AKfycbxxxx"))return;
+  if(!ONLINE_DATA_URL || ONLINE_DATA_URL.trim()==="" || ONLINE_DATA_URL.includes("AKfycbxxxx")){
+    alert("ONLINE_DATA_URL masih kosong atau salah.");
+    return;
+  }
 
   const data={
     app:"Mandarin Puzzle Edukasi",
@@ -697,13 +700,44 @@ function sendOnlineData(payload){
   };
 
   try{
-    fetch(ONLINE_DATA_URL,{
-      method:"POST",
-      mode:"no-cors",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify(data)
-    });
-  }catch(e){}
+    const iframeName = "hidden_iframe_" + Date.now();
+
+    const iframe = document.createElement("iframe");
+    iframe.name = iframeName;
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = ONLINE_DATA_URL;
+    form.target = iframeName;
+    form.style.display = "none";
+
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "payload";
+    input.value = JSON.stringify(data);
+
+    form.appendChild(input);
+    document.body.appendChild(form);
+
+    form.submit();
+
+    setTimeout(function(){
+      if(form.parentNode){
+        form.parentNode.removeChild(form);
+      }
+      if(iframe.parentNode){
+        iframe.parentNode.removeChild(iframe);
+      }
+    }, 3000);
+
+    console.log("Data dikirim ke Google Sheet:", data);
+
+  }catch(error){
+    console.error("Gagal mengirim data:", error);
+    alert("Gagal mengirim data ke Google Sheet.");
+  }
 }
 
 function saveHiddenLearningLog(status){
